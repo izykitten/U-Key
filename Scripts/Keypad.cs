@@ -23,24 +23,27 @@ namespace UwUtils
         private readonly string VERSION = "3.5";
         [Space]
         [SerializeField] private string solution = "2580";
-        [SerializeField] private GameObject doorObject = null;
+        [SerializeField] private GameObject[] DoorObjects = new GameObject[0];
         [Space]
         [Tooltip("List of users that can just press the confirm button without the code to get permission")]
         public string[] allowList = new string[0];
         [Tooltip("List of users who even with the code cannot enter the code")]
-        public string[] denyList = new string[0]; // TODO: REMOVE DENY LIST, THIS IS AGAINST TOS
+        public string[] denyList = new string[0];
         [Space]
         [Header("Fetch allowlist from URL string?")]
         [SerializeField] private bool useRemoteString = false;
-        [SerializeField] private VRCUrl linkToString;
+        [SerializeField] private VRCUrl linkForAllowList;
+        [SerializeField] private VRCUrl linkForDenyList;
         [SerializeField] private char SplitStringWithCharacter = ',';
         [HideInInspector] public string[] strArr;
         [Space]
-        public AudioSource soundDenied = null;
-        public AudioSource soundGranted = null;
-        public AudioSource soundButton = null;
+        [Header("Sound settings")]
+        [SerializeField] private bool useAudioFeedback;
+        [SerializeField] private AudioSource soundDenied = null;
+        [SerializeField] private AudioSource soundGranted = null;
+        [SerializeField] private AudioSource soundButton = null;
         [Space]
-        
+        [Header("Text display")]
         public string translationPasscode = "PASSCODE"; // ReSharper disable once InconsistentNaming
         public string translationDenied = "DENIED"; // ReSharper disable once InconsistentNaming
         public string translationGranted = "GRANTED"; // ReSharper disable once InconsistentNaming
@@ -54,7 +57,6 @@ namespace UwUtils
         public TextMeshProUGUI internalKeypadDisplay = null;
         [Space]
         public string[] additionalSolutions = new string[0];
-        public GameObject[] additionalDoorObjects = new GameObject[0];
         [Space]
         public bool additionalKeySeparation = false;
         [Space]
@@ -122,12 +124,6 @@ namespace UwUtils
                 solution = "2580";
             }
 
-            if (doorObject == null)
-            {
-                LogWarning("Door object was null! Resetting to default value!");
-                doorObject = gameObject;
-            }
-
             if (internalKeypadDisplay == null)
             {
                 LogError("Display is not set! This is not supported! If you do not want a display then just disable the display object. Dying...");
@@ -161,10 +157,10 @@ namespace UwUtils
                 LogError("Additional Solutions list was null, setting to empty list...");
                 additionalSolutions = new string[0];
             }
-            if (additionalDoorObjects == null)
+            if (DoorObjects == null)
             {
                 LogError("Additional Doors list was null, setting to empty list...");
-                additionalDoorObjects = new GameObject[0];
+                DoorObjects = new GameObject[0];
             }
 
             if (additionalSolutions.Length > 9999)
@@ -172,13 +168,13 @@ namespace UwUtils
                 LogError("Additional Solutions list was larger than 9999, this is most likely unintentional, resetting to 0.");
                 additionalSolutions = new string[0];
             }
-            if (additionalDoorObjects.Length > 9999)
+            if (DoorObjects.Length > 9999)
             {
                 LogError("Additional Doors list was larger than 9999, this is most likely unintentional, resetting to 0.");
-                additionalDoorObjects = new GameObject[0];
+                DoorObjects = new GameObject[0];
             }
 
-            if (additionalKeySeparation && additionalSolutions.Length != additionalDoorObjects.Length)
+            if (additionalKeySeparation && additionalSolutions.Length != DoorObjects.Length)
             {
                 LogError("Key separation was enabled, but the number of additional solutions is not equal to the number of additional doors, " +
                     "resetting to False. Please read the documentation what this setting does or contact for help.");
@@ -189,16 +185,15 @@ namespace UwUtils
             // Merge primary solution/door with additional solutions/doors.
             // This makes coding and loops more streamlined.
             _solutions = new string[additionalSolutions.Length + 1];
-            _doors = new GameObject[additionalDoorObjects.Length + 1];
+            _doors = new GameObject[DoorObjects.Length + 1];
             _solutions[0] = solution;
-            _doors[0] = doorObject;
             for (var i = 0; i != additionalSolutions.Length; i++)
             {
                 _solutions[i + 1] = additionalSolutions[i];
             }
-            for (var i = 0; i != additionalDoorObjects.Length; i++)
+            for (var i = 0; i != DoorObjects.Length; i++)
             {
-                _doors[i + 1] = additionalDoorObjects[i];
+                _doors[i + 1] = DoorObjects[i];
             }
 
             internalKeypadDisplay.text = translationPasscode;
@@ -207,7 +202,8 @@ namespace UwUtils
         }
         public void _LoadUrl()
         {
-            VRCStringDownloader.LoadUrl(linkToString, (IUdonEventReceiver)this);
+            VRCStringDownloader.LoadUrl(linkForAllowList, (IUdonEventReceiver)this);
+            //VRCStringDownloader.LoadUrl(linkForDenyList, (IUdonEventReceiver)this);
         }
         public override void OnStringLoadSuccess(IVRCStringDownload result)
         {
@@ -216,11 +212,11 @@ namespace UwUtils
             {
                 strArr = loadedString.Split(SplitStringWithCharacter);
             }
-            if (!disableDebugging) Debug.Log("[Reava_/UwUtils/RemoteStringToText.cs]: String successfully loaded: " + loadedString + "On: " + gameObject.name, gameObject);
+            if (!disableDebugging) Debug.Log("[Reava_/UwUtils/Keypad]: String successfully loaded: " + loadedString + "On: " + gameObject.name, gameObject);
         }
         public override void OnStringLoadError(IVRCStringDownload result)
         {
-            Debug.LogError("[Reava_/UwUtils/RemoteStringToText.cs]: String loading failed: " + result.Error + "| Error Code: " + result.ErrorCode + "On: " + gameObject.name, gameObject);
+            Debug.LogError("[Reava_/UwUtils/Keypad]: String loading failed: " + result.Error + "| Error Code: " + result.ErrorCode + "On: " + gameObject.name, gameObject);
         }
 
         // ReSharper disable once InconsistentNaming
