@@ -4,6 +4,8 @@ using VRC.Udon;
 using UnityEngine.UI;
 using VRC.SDKBase;
 using TMPro;
+using VRC.SDK3.StringLoading;
+using VRC.Udon.Common.Interfaces;
 
 // ReSharper disable MemberCanBeMadeStatic.Local
 // ReSharper disable once CheckNamespace
@@ -20,13 +22,19 @@ namespace UwUtils
         private readonly string AUTHOR = "Foorack";
         private readonly string VERSION = "3.5";
         [Space]
-        public string solution = "2580";
-        public GameObject doorObject = null;
+        [SerializeField] private string solution = "2580";
+        [SerializeField] private GameObject doorObject = null;
         [Space]
         [Tooltip("List of users that can just press the confirm button without the code to get permission")]
         public string[] allowList = new string[0];
         [Tooltip("List of users who even with the code cannot enter the code")]
-        public string[] denyList = new string[0];
+        public string[] denyList = new string[0]; // TODO: REMOVE DENY LIST, THIS IS AGAINST TOS
+        [Space]
+        [Header("Fetch allowlist from URL string?")]
+        [SerializeField] private bool useRemoteString = false;
+        [SerializeField] private VRCUrl linkToString;
+        [SerializeField] private char SplitStringWithCharacter = ',';
+        [HideInInspector] public string[] strArr;
         [Space]
         public AudioSource soundDenied = null;
         public AudioSource soundGranted = null;
@@ -59,6 +67,7 @@ namespace UwUtils
         private string _buffer;
         private string[] _solutions;
         private GameObject[] _doors;
+        private string loadedString;
 
         #region Util Functions
         private void Log(string value)
@@ -193,8 +202,25 @@ namespace UwUtils
             }
 
             internalKeypadDisplay.text = translationPasscode;
-
+            _LoadUrl();
             Log("Keypad started!");
+        }
+        public void _LoadUrl()
+        {
+            VRCStringDownloader.LoadUrl(linkToString, (IUdonEventReceiver)this);
+        }
+        public override void OnStringLoadSuccess(IVRCStringDownload result)
+        {
+            loadedString += result.Result;
+            if (useRemoteString)
+            {
+                strArr = loadedString.Split(SplitStringWithCharacter);
+            }
+            if (!disableDebugging) Debug.Log("[Reava_/UwUtils/RemoteStringToText.cs]: String successfully loaded: " + loadedString + "On: " + gameObject.name, gameObject);
+        }
+        public override void OnStringLoadError(IVRCStringDownload result)
+        {
+            Debug.LogError("[Reava_/UwUtils/RemoteStringToText.cs]: String loading failed: " + result.Error + "| Error Code: " + result.ErrorCode + "On: " + gameObject.name, gameObject);
         }
 
         // ReSharper disable once InconsistentNaming
