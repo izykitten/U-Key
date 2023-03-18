@@ -4,7 +4,7 @@
 
 # Currently being ported to VCC!
 
-This is a fork of the known keypad from Foorack, I'm currently porting it to be used on par with [UwUtils}(https://github.com/Reava/UwUtils) or standalone, with the latest Udon goodies (Like Remote String Loading) and in general, just a big refresh of it whilst keeping it mostly similar.
+This is a fork of the known keypad from Foorack, I'm currently porting it to be used on par with [UwUtils](https://github.com/Reava/UwUtils) or standalone, with the latest Udon goodies (Like Remote String Loading) and in general, just a big refresh of it whilst keeping it mostly similar.
 
 ! **I'm also rewriting this readme as I'm changing/updating things.**
 
