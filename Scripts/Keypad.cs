@@ -22,11 +22,12 @@ namespace UwUtils
         private readonly string AUTHOR = "Foorack";
         private readonly string VERSION = "3.6";
         [Space]
-        [SerializeField] private string solution = "2580";
-        [SerializeField] private GameObject[] DoorObjects = new GameObject[0];
-        [Tooltip("Disable this to show the door objects on granted.")]
+        [SerializeField] private string keypadPassword = "2580";
         [SerializeField] private bool hideDoorOnGranted = true;
+        [SerializeField] private GameObject[] DoorObjects = new GameObject[0];
         [Space]
+        [Header("User settings")]
+        [SerializeField] private bool autoGrantAllowedUsers = false;
         [Tooltip("List of users that can just press the confirm button without the code to get permission")]
         public string[] allowList = new string[0];
         [Tooltip("List of users who even with the code cannot enter the code")]
@@ -42,26 +43,43 @@ namespace UwUtils
         [Header("Text display")]
         [Space]
         [SerializeField] private TextMeshProUGUI internalKeypadDisplay = null;
-        [SerializeField] private string translationPasscode = "PASSCODE"; // ReSharper disable once InconsistentNaming
+        [SerializeField] private string translationWaitcode = "PASSCODE"; // ReSharper disable once InconsistentNaming
         [SerializeField] private string translationDenied = "DENIED"; // ReSharper disable once InconsistentNaming
         [SerializeField] private string translationGranted = "GRANTED"; // ReSharper disable once InconsistentNaming
         [Space]
-        [SerializeField] private UdonBehaviour programClosed;
-        [SerializeField] private UdonBehaviour programDenied;
-        [SerializeField] private UdonBehaviour[] programGranted;
+        [Header("Event trigger relays")
         [Space]
-        [Header("References")]
+        [SerializeField] private UdonBehaviour[] programsClosed;
+        [SerializeField] private UdonBehaviour[] programsDenied;
+        [SerializeField] private UdonBehaviour[] programsGranted;
+        [Space]
+        [Header("Per passcode actions (Hover over)")]
+        [Tooltip("When enabled, each code in 'additionalPasscodes' will toggle its own door in the 'additionalDoors' list, same for programsGranted")]
         [SerializeField] private bool additionalKeySeparation = false;
-        [SerializeField] private string[] additionalSolutions = new string[0];
+        [SerializeField] private string[] additionalPasscodes = new string[0];
         [SerializeField] private GameObject[] additionalDoors = new GameObject[0];
         [Space]
-        [Header("Fetch config from remote string? (See docs)")]
-        [SerializeField] private bool useRemoteString = false;
-        [SerializeField] private VRCUrl remoteConfigUrl;
-        [HideInInspector] public string[] strArr;
+        [Header("Extra Functions/Settings")]
+        [SerializeField] private bool teleportOnGrant = false;
+        [SerializeField] private Transform teleportDestination;
+        [Range(0, 1), Tooltip("Use only one character")]
+        [SerializeField] private string replacePassWithChar = "*";
+        [Tooltip("When clear is hit after getting access, will revert the state of the 'doors' back to its original state.")]
+        [SerializeField] private bool RevertGrantedEffectsOnClear = true;
+        [SerializeField] private GameObject[] ExtraObjectsToTurnOn = new GameObject[0];
+        [SerializeField] private GameObject[] ExtraObjectsToTurnOff = new GameObject[0];
+        [SerializeField] private bool alsoSendInteractEventOnGrantedPrograms = false;
+        [SerializeField] private string eventNameOnClosed = "_keypadClosed";
+        [SerializeField] private string eventNameOnDenied = "_keypadDenied";
+        [SerializeField] private string eventNameOnGranted = "_keypadGranted";
+        [Space]
+        [Header("Advanced Section")]
+        [SerializeField] private int MaxInputLength = 8;
+        [SerializeField] private bool useDisplay = true;
         [Space]
         [Header("Warning: No support will be given if logging was disabled.")]
-        public bool enableLogging = true;
+        [SerializeField] private bool enableLogging = true;
+
         // Debugging
         private string _keypadId;
         private string _prefix;
@@ -113,22 +131,22 @@ namespace UwUtils
 
             _buffer = "";
 
-            if (solution == null)
+            if (keypadPassword == null)
             {
                 LogError("Solution was null! Resetting to default value!");
-                solution = "2580";
+                keypadPassword = "2580";
             }
 
-            if (solution.Length < 1 || solution.Length > 8)
+            if (keypadPassword.Length < 1 || keypadPassword.Length > MaxInputLength)
             {
-                LogError("Solution was shorter than 1 or longer than 8 in length! Generating random value for security.");
-                solution = Random.value.ToString();
+                LogError("Solution was empty or longer than "+ MaxInputLength +" in length! Generating random value for security.");
+                keypadPassword = Random.value.ToString();
             }
 
             if (internalKeypadDisplay == null)
             {
                 LogError("Display is not set! This is not supported! If you do not want a display then just disable the display object. Dying...");
-                Die();
+                useDisplay = false;
             }
 
             if (allowList == null)
@@ -153,10 +171,10 @@ namespace UwUtils
                 denyList = new string[0];
             }
 
-            if (additionalSolutions == null)
+            if (additionalPasscodes == null)
             {
                 LogError("Additional Solutions list was null, setting to empty list...");
-                additionalSolutions = new string[0];
+                additionalPasscodes = new string[0];
             }
             if (DoorObjects == null)
             {
@@ -164,10 +182,10 @@ namespace UwUtils
                 DoorObjects = new GameObject[0];
             }
 
-            if (additionalSolutions.Length > 999)
+            if (additionalPasscodes.Length > 999)
             {
                 LogError("Additional Solutions list was larger than 999, this is most likely unintentional, resetting to 0.");
-                additionalSolutions = new string[0];
+                additionalPasscodes = new string[0];
             }
             if (DoorObjects.Length > 999)
             {
@@ -175,7 +193,7 @@ namespace UwUtils
                 DoorObjects = new GameObject[0];
             }
 
-            if (additionalKeySeparation && additionalSolutions.Length != DoorObjects.Length)
+            if (additionalKeySeparation && additionalPasscodes.Length != DoorObjects.Length)
             {
                 LogError("Key separation was enabled, but the number of additional solutions is not equal to the number of additional doors, " +
                     "resetting to False. Please read the documentation what this setting does or contact for help.");
@@ -185,41 +203,27 @@ namespace UwUtils
 
             // Merge primary solution/door with additional solutions/doors.
             // This makes coding and loops more streamlined.
-            _solutions = new string[additionalSolutions.Length + 1];
+            _solutions = new string[additionalPasscodes.Length + 1];
             _doors = new GameObject[DoorObjects.Length + 1];
-            _solutions[0] = solution;
-            for (var i = 0; i != additionalSolutions.Length; i++)
+            _solutions[0] = keypadPassword;
+            for (var i = 0; i != additionalPasscodes.Length; i++)
             {
-                _solutions[i + 1] = additionalSolutions[i];
+                _solutions[i + 1] = additionalPasscodes[i];
             }
             for (var i = 0; i != DoorObjects.Length; i++)
             {
                 _doors[i + 1] = DoorObjects[i];
             }
 
-            internalKeypadDisplay.text = translationPasscode;
-            if(useRemoteString) _LoadUrl();
+            internalKeypadDisplay.text = translationWaitcode;
             Log("Keypad started!");
-        }
-        public void _LoadUrl()
-        {
-            VRCStringDownloader.LoadUrl(remoteConfigUrl, (IUdonEventReceiver)this);
-        }
-        public override void OnStringLoadSuccess(IVRCStringDownload result)
-        {
-            loadedString += result.Result;
-            if (enableLogging) Debug.Log("[Reava_/UwUtils/Keypad]: String successfully loaded: " + loadedString + "On: " + gameObject.name, gameObject);
-        }
-        public override void OnStringLoadError(IVRCStringDownload result)
-        {
-            Debug.LogError("[Reava_/UwUtils/Keypad]: String loading failed: " + result.Error + "| Error Code: " + result.ErrorCode + "On: " + gameObject.name, gameObject);
         }
 
         // ReSharper disable once InconsistentNaming
         private void CLR()
         {
             Log("Passcode CLEAR!");
-            internalKeypadDisplay.text = translationPasscode;
+            internalKeypadDisplay.text = translationWaitcode;
 
             foreach (GameObject door in _doors)
             {
@@ -227,10 +231,13 @@ namespace UwUtils
                 door.SetActive(hideDoorOnGranted);
             }
 
-            if (programDenied != null)
+            if (programsClosed != null)
             {
-                programClosed.SetProgramVariable("keypadCode", _buffer);
-                programClosed.SendCustomEvent("keypadClosed");
+                foreach(UdonBehaviour prog in programsClosed)
+                {
+                    prog.SetProgramVariable("keypadCode", _buffer);
+                    prog.SendCustomEvent(eventNameOnClosed);
+                }
             }
 
             _buffer = "";
@@ -301,13 +308,13 @@ namespace UwUtils
                     feedbackSource.PlayOneShot(soundGranted);
                 }
 
-                if (programGranted != null)
+                if (programsGranted != null)
                 {
-                    foreach(UdonBehaviour prog in programGranted)
+                    foreach(UdonBehaviour prog in programsGranted)
                     {
                         if (!prog) continue;
                         prog.SetProgramVariable("keypadCode", _buffer);
-                        prog.SendCustomEvent("keypadGranted");
+                        prog.SendCustomEvent(eventNameOnGranted);
                     }
                 }
 
@@ -327,10 +334,14 @@ namespace UwUtils
 
                 if (soundDenied != null) feedbackSource.PlayOneShot(soundDenied);
 
-                if (programDenied != null)
+                if (programsDenied != null)
                 {
-                    programDenied.SetProgramVariable("keypadCode", _buffer);
-                    programDenied.SendCustomEvent("keypadDenied");
+                    foreach (UdonBehaviour prog in programsDenied)
+                    {
+                        if (!prog) continue;
+                        prog.SetProgramVariable("keypadCode", _buffer);
+                        prog.SendCustomEvent(eventNameOnDenied);
+                    }
                 }
 
                 _buffer = "";
