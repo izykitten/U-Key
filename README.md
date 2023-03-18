@@ -24,7 +24,7 @@ This is a drag-and-drop Keypad/Passcode Prefab for VRChat worlds made in Unity *
 
 **Settings:** Look at the settings provided on the **main Keypad object:**
 
-![Settings available in the Keypad prefab](https://blog.foorack.com/content/images/2021/04/bild.png "Settings available in the Keypad prefab")
+![Settings available in the Keypad prefab](https://user-images.githubusercontent.com/93742413/226104995-532ec22e-09ca-46fe-8c5f-9d0200f30059.PNG)
 
 The main focus is "Door Object" (marked in green) which accepts any GameObject and will toggle active status depending on passcode status, and "Solution" (marked in yellow) which accepts any numeric passcode up to 8 numbers long.
 
