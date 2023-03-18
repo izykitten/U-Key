@@ -24,6 +24,8 @@ namespace UwUtils
         [Space]
         [SerializeField] private string solution = "2580";
         [SerializeField] private GameObject[] DoorObjects = new GameObject[0];
+        [Tooltip("Disable this to show the door objects on granted.")]
+        [SerializeField] private bool hideDoorOnGranted = true;
         [Space]
         [Tooltip("List of users that can just press the confirm button without the code to get permission")]
         public string[] allowList = new string[0];
@@ -38,21 +40,20 @@ namespace UwUtils
         [SerializeField] private AudioClip soundButton = null;
         [Space]
         [Header("Text display")]
+        [Space]
+        [SerializeField] private TextMeshProUGUI internalKeypadDisplay = null;
         [SerializeField] private string translationPasscode = "PASSCODE"; // ReSharper disable once InconsistentNaming
         [SerializeField] private string translationDenied = "DENIED"; // ReSharper disable once InconsistentNaming
         [SerializeField] private string translationGranted = "GRANTED"; // ReSharper disable once InconsistentNaming
-        [Space]
-        [SerializeField] private bool hideDoorOnGranted = true;
         [Space]
         [SerializeField] private UdonBehaviour programClosed;
         [SerializeField] private UdonBehaviour programDenied;
         [SerializeField] private UdonBehaviour[] programGranted;
         [Space]
-        [SerializeField] private TextMeshProUGUI internalKeypadDisplay = null;
-        [Space]
-        [SerializeField] private string[] additionalSolutions = new string[0];
-        [Space]
+        [Header("References")]
         [SerializeField] private bool additionalKeySeparation = false;
+        [SerializeField] private string[] additionalSolutions = new string[0];
+        [SerializeField] private GameObject[] additionalDoors = new GameObject[0];
         [Space]
         [Header("Fetch config from remote string? (See docs)")]
         [SerializeField] private bool useRemoteString = false;
@@ -197,7 +198,7 @@ namespace UwUtils
             }
 
             internalKeypadDisplay.text = translationPasscode;
-            _LoadUrl();
+            if(useRemoteString) _LoadUrl();
             Log("Keypad started!");
         }
         public void _LoadUrl()
@@ -207,10 +208,6 @@ namespace UwUtils
         public override void OnStringLoadSuccess(IVRCStringDownload result)
         {
             loadedString += result.Result;
-            if (useRemoteString)
-            {
-                strArr = loadedString.Split(',');
-            }
             if (enableLogging) Debug.Log("[Reava_/UwUtils/Keypad]: String successfully loaded: " + loadedString + "On: " + gameObject.name, gameObject);
         }
         public override void OnStringLoadError(IVRCStringDownload result)
@@ -224,12 +221,10 @@ namespace UwUtils
             Log("Passcode CLEAR!");
             internalKeypadDisplay.text = translationPasscode;
 
-            foreach (var door in _doors)
+            foreach (GameObject door in _doors)
             {
-                if (door != gameObject)
-                {
-                    door.SetActive(hideDoorOnGranted);
-                }
+                if (!door) continue;
+                door.SetActive(hideDoorOnGranted);
             }
 
             if (programDenied != null)
@@ -281,9 +276,9 @@ namespace UwUtils
                 Log(isOnAllow ? "GRANTED through allow list!" : "Passcode GRANTED!");
                 internalKeypadDisplay.text = translationGranted;
 
-                foreach (var door in _doors)
+                foreach (GameObject door in _doors)
                 {
-                    if (door == gameObject) continue;
+                    if (!door) continue;
                     if (additionalKeySeparation)
                     {
                         if (door == correctDoor)
