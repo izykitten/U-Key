@@ -1,5 +1,5 @@
 fileFormatVersion: 2
-guid: 2f25db619040c1946bd50c17691c1aa6
+guid: d1413d52ebab59c47bb264e62e2d6d0b
 TrueTypeFontImporter:
   externalObjects: {}
   serializedVersion: 4
@@ -8,11 +8,11 @@ TrueTypeFontImporter:
   characterSpacing: 0
   characterPadding: 1
   includeFontData: 1
-  fontName: Vegan Abattoir
+  fontName: HUN-din 1451
   fontNames:
-  - Vegan Abattoir
+  - HUN-din 1451
   fallbackFontReferences:
-  - {fileID: 12800000, guid: d23f2d990e068984ba64d0e548dabfab, type: 3}
+  - {fileID: 12800000, guid: ab48aa12608b41f4393c5f5b3a79dc80, type: 3}
   customCharacters: 
   fontRenderingMode: 0
   ascentCalculationMode: 1
