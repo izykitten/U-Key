@@ -3309,31 +3309,40 @@ MonoBehaviour:
     PrefabModifications: []
     SerializationNodes: []
   _udonSharpBackingUdonBehaviour: {fileID: 4737459655680067385}
-  solution: 2580
+  hideDoorsOnGranted: 1
+  keypadPassword: 8462
   DoorObjects:
   - {fileID: 0}
-  hideDoorOnGranted: 1
+  OnJoinGrant: 0
   allowList: []
   denyList: []
-  useAudioFeedback: 0
+  useAudioFeedback: 1
   feedbackSource: {fileID: 8096511764605198366}
   soundDenied: {fileID: 0}
   soundGranted: {fileID: 0}
   soundButton: {fileID: 0}
   internalKeypadDisplay: {fileID: 1165432261644349321}
-  translationPasscode: PASSCODE
+  translationWaitcode: PASSCODE
   translationDenied: DENIED
   translationGranted: GRANTED
-  programClosed: {fileID: 0}
-  programDenied: {fileID: 0}
-  programGranted: []
   additionalKeySeparation: 0
-  additionalSolutions: []
+  additionalPasscodes: []
   additionalDoors: []
-  useRemoteString: 0
-  remoteConfigUrl:
-    url: 
-  strArr: []
+  programsClosed: []
+  programsDenied: []
+  programsGranted: []
+  ExtraObjectsToTurnOn: []
+  ExtraObjectsToTurnOff: []
+  teleportOnGrant: 0
+  teleportDestination: {fileID: 0}
+  HidePasswordTyped: 1
+  OnClearRevertDoors: 1
+  MaxInputLength: 8
+  useDisplay: 1
+  replacePassWithChar: 42
+  eventNameOnClosed: _interact
+  eventNameOnDenied: _interact
+  eventNameOnGranted: _interact
   enableLogging: 1
 --- !u!114 &4737459655680067385
 MonoBehaviour:
