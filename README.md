@@ -1,6 +1,6 @@
 # 🔒 **Keypad Prefab made with Udon for VRChat worlds**
 
-![keypad](https://user-images.githubusercontent.com/93742413/226081439-83517c55-0125-4e94-914a-80504318388e.png)
+![keypad](https://user-images.githubusercontent.com/93742413/226099076-105fcbdf-e777-49a4-bdfc-deebb8ce7709.png)
 
 # Currently being ported to [VCC](https://vcc.docs.vrchat.com/)!
 
@@ -14,9 +14,11 @@ This is a drag-and-drop Keypad/Passcode Prefab for VRChat worlds made in Unity *
 
 **Note:** The Keypad has been rewritten into UdonSharp. Don't worry! You don't have to touch UdonSharp code I promise!
 
-1. Make sure you have UdonSharp installed via the [VCC](https://vcc.docs.vrchat.com/) (Projects > Manage project > Plus icon on the right of Udonsharp)
+1. Make sure you have UdonSharp 1.1.7 or higher installed via the [VCC](https://vcc.docs.vrchat.com/) (Projects > Manage project > Plus icon on the right of Udonsharp)
+2. Download & Import the keypad into your project
+3. Enjoy?
 
-[Download latest](https://github.com/Reava/U-Keypad/releases/latest/)
+=> [Download latest](https://github.com/Reava/U-Keypad/releases/latest/)
 
 ## **✨ Setup Tutorial**
 
@@ -36,19 +38,12 @@ The main focus is "Door Object" (marked in green) which accepts any GameObject a
 
 The new version of Keypad supports many customization features. For example translating the Keypad into your own language, by changing the status texts. You can also make the door show the door instead of hiding the door by de-selecting the "Hide Door On Granted" checkbox. 
 
-You can disable debugging if you know what you are doing. This will make it less verbose in console, but it is recommended to leave this on. You can also change the values of the buttons to letters, add more buttons, or change the design, they are just Unity cubes...
-
 ## **⚙️ Advanced: Solution Scripting**
 
-This is optional, and only recommended for people who are interested in doing Udon programming. You should at least have watched Tupper's tutorial on cube-rotation before attempting this!
+This is optional, and only recommended for people who are interested in doing Udon programming. 
+**You should at least have watched Tupper's tutorial on cube-rotation before attempting this!**
 
 There are 3 possible programs which are run at different stages: at success, at failure, and at reset. Each program calls a custom event. An optional variable `keypadCode` will be set with the entered code on the target program.
-
-| Setting name   | Event name      | Description                |
-| -------------- |:---------------:| -------------------------- |
-| programGranted | "keypadGranted" | Runs at successful code    |
-| programDenied  | "keypadDenied"  | Runs at wrong code         |
-| programClosed  | "keypadClosed"  | Runs at pressing Clear/CLR |
 
 ## **💙 Hope you enjoy it!**
 
