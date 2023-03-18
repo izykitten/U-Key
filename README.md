@@ -1,6 +1,6 @@
 # 🔒 **Keypad Prefab made with Udon for VRChat worlds**
 
-![keypad](https://user-images.githubusercontent.com/93742413/226081439-83517c55-0125-4e94-914a-80504318388e.png)
+![keypad](https://user-images.githubusercontent.com/93742413/226099076-105fcbdf-e777-49a4-bdfc-deebb8ce7709.png)
 
 # Currently being ported to [VCC](https://vcc.docs.vrchat.com/)!
 
