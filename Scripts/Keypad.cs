@@ -20,7 +20,7 @@ namespace UwUtils
     {
 
         private readonly string AUTHOR = "Foorack";
-        private readonly string VERSION = "3.5";
+        private readonly string VERSION = "3.6";
         [Space]
         [SerializeField] private string solution = "2580";
         [SerializeField] private GameObject[] DoorObjects = new GameObject[0];
@@ -30,13 +30,6 @@ namespace UwUtils
         [Tooltip("List of users who even with the code cannot enter the code")]
         public string[] denyList = new string[0];
         [Space]
-        [Header("Fetch allowlist from URL string?")]
-        [SerializeField] private bool useRemoteString = false;
-        [SerializeField] private VRCUrl linkForAllowList;
-        [SerializeField] private VRCUrl linkForDenyList;
-        [SerializeField] private char SplitStringWithCharacter = ',';
-        [HideInInspector] public string[] strArr;
-        [Space]
         [Header("Sound settings")]
         [SerializeField] private bool useAudioFeedback;
         [SerializeField] private AudioSource soundDenied = null;
@@ -44,21 +37,26 @@ namespace UwUtils
         [SerializeField] private AudioSource soundButton = null;
         [Space]
         [Header("Text display")]
-        public string translationPasscode = "PASSCODE"; // ReSharper disable once InconsistentNaming
-        public string translationDenied = "DENIED"; // ReSharper disable once InconsistentNaming
-        public string translationGranted = "GRANTED"; // ReSharper disable once InconsistentNaming
+        [SerializeField] private string translationPasscode = "PASSCODE"; // ReSharper disable once InconsistentNaming
+        [SerializeField] private string translationDenied = "DENIED"; // ReSharper disable once InconsistentNaming
+        [SerializeField] private string translationGranted = "GRANTED"; // ReSharper disable once InconsistentNaming
         [Space]
-        public bool hideDoorOnGranted = true;
+        [SerializeField] private bool hideDoorOnGranted = true;
         [Space]
-        public UdonBehaviour programClosed;
-        public UdonBehaviour programDenied;
-        public UdonBehaviour programGranted;
+        [SerializeField] private UdonBehaviour programClosed;
+        [SerializeField] private UdonBehaviour programDenied;
+        [SerializeField] private UdonBehaviour[] programGranted;
         [Space]
-        public TextMeshProUGUI internalKeypadDisplay = null;
+        [SerializeField] private TextMeshProUGUI internalKeypadDisplay = null;
         [Space]
-        public string[] additionalSolutions = new string[0];
+        [SerializeField] private string[] additionalSolutions = new string[0];
         [Space]
-        public bool additionalKeySeparation = false;
+        [SerializeField] private bool additionalKeySeparation = false;
+        [Space]
+        [Header("Fetch config from remote string? (See docs)")]
+        [SerializeField] private bool useRemoteString = false;
+        [SerializeField] private VRCUrl remoteConfigUrl;
+        [HideInInspector] public string[] strArr;
         [Space]
         public bool disableDebugging = false;
         // Debugging
@@ -76,21 +74,21 @@ namespace UwUtils
         {
             if (disableDebugging != true)
             {
-                Debug.Log(_prefix + value);
+                Debug.Log(_prefix + value, gameObject);
             }
         }
         private void LogWarning(string value)
         {
             if (disableDebugging != true)
             {
-                Debug.LogWarning(_prefix + value);
+                Debug.LogWarning(_prefix + value, gameObject);
             }
         }
         private void LogError(string value)
         {
             if (disableDebugging != true)
             {
-                Debug.LogError(_prefix + value);
+                Debug.LogError(_prefix + value, gameObject);
             }
         }
         private void Die()
@@ -105,8 +103,8 @@ namespace UwUtils
         public void Start()
         {
             // ReSharper disable once SpecifyACultureInStringConversionExplicitly
-            _keypadId = Random.value.ToString();
-            _prefix = "[UdonKeypad] [K-" + _keypadId + "] ";
+            _keypadId = Random.value.ToString() + "(" + gameObject.name + ")";
+            _prefix = "[Reava_/UwUtils/Keypad] [K-" + _keypadId + "] ";
             // Override disableDebugging here
             Debug.Log(_prefix + "Starting Keypad... Made by @" + AUTHOR + ". Version " + VERSION + ".");
 
@@ -120,8 +118,8 @@ namespace UwUtils
 
             if (solution.Length < 1 || solution.Length > 8)
             {
-                LogError("Solution was shorter than 1 or longer than 8 in length! Resetting to default value!");
-                solution = "2580";
+                LogError("Solution was shorter than 1 or longer than 8 in length! Generating random value for security.");
+                solution = Random.value.ToString();
             }
 
             if (internalKeypadDisplay == null)
@@ -141,14 +139,14 @@ namespace UwUtils
                 denyList = new string[0];
             }
 
-            if (allowList.Length > 9999)
+            if (allowList.Length > 999)
             {
-                LogError("Allow list was larger than 9999, this is most likely unintentional, resetting to 0.");
+                LogError("Allow list was larger than 999, this is most likely unintentional, resetting to 0.");
                 allowList = new string[0];
             }
-            if (denyList.Length > 9999)
+            if (denyList.Length > 999)
             {
-                LogError("Allow list was larger than 9999, this is most likely unintentional, resetting to 0.");
+                LogError("Allow list was larger than 999, this is most likely unintentional, resetting to 0.");
                 denyList = new string[0];
             }
 
@@ -163,14 +161,14 @@ namespace UwUtils
                 DoorObjects = new GameObject[0];
             }
 
-            if (additionalSolutions.Length > 9999)
+            if (additionalSolutions.Length > 999)
             {
-                LogError("Additional Solutions list was larger than 9999, this is most likely unintentional, resetting to 0.");
+                LogError("Additional Solutions list was larger than 999, this is most likely unintentional, resetting to 0.");
                 additionalSolutions = new string[0];
             }
-            if (DoorObjects.Length > 9999)
+            if (DoorObjects.Length > 999)
             {
-                LogError("Additional Doors list was larger than 9999, this is most likely unintentional, resetting to 0.");
+                LogError("Additional Doors list was larger than 999, this is most likely unintentional, resetting to 0.");
                 DoorObjects = new GameObject[0];
             }
 
@@ -202,15 +200,14 @@ namespace UwUtils
         }
         public void _LoadUrl()
         {
-            VRCStringDownloader.LoadUrl(linkForAllowList, (IUdonEventReceiver)this);
-            //VRCStringDownloader.LoadUrl(linkForDenyList, (IUdonEventReceiver)this);
+            VRCStringDownloader.LoadUrl(remoteConfigUrl, (IUdonEventReceiver)this);
         }
         public override void OnStringLoadSuccess(IVRCStringDownload result)
         {
             loadedString += result.Result;
             if (useRemoteString)
             {
-                strArr = loadedString.Split(SplitStringWithCharacter);
+                strArr = loadedString.Split(',');
             }
             if (!disableDebugging) Debug.Log("[Reava_/UwUtils/Keypad]: String successfully loaded: " + loadedString + "On: " + gameObject.name, gameObject);
         }
@@ -309,8 +306,12 @@ namespace UwUtils
 
                 if (programGranted != null)
                 {
-                    programGranted.SetProgramVariable("keypadCode", _buffer);
-                    programGranted.SendCustomEvent("keypadGranted");
+                    foreach(UdonBehaviour prog in programGranted)
+                    {
+                        if (!prog) continue;
+                        prog.SetProgramVariable("keypadCode", _buffer);
+                        prog.SendCustomEvent("keypadGranted");
+                    }
                 }
 
                 _buffer = "";
@@ -327,10 +328,7 @@ namespace UwUtils
                     door.SetActive(hideDoorOnGranted);
                 }
 
-                if (soundDenied != null)
-                {
-                    soundDenied.Play();
-                }
+                if (soundDenied != null) soundDenied.Play();
 
                 if (programDenied != null)
                 {
