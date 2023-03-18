@@ -1,24 +1,24 @@
 # 🔒 **Keypad Prefab made with Udon for VRChat worlds**
 
-![VRChat Udon Keypad/Passcode](https://blog.foorack.com/content/images/2020/01/keypad2.PNG)
+![keypad](https://user-images.githubusercontent.com/93742413/226081439-83517c55-0125-4e94-914a-80504318388e.png)
 
-[![Discord](https://img.shields.io/badge/Discord-Foo's%20Udon%20Laboratory-blueviolet?logo=discord)](https://discord.gg/7xJdWNk) - Feel free to join if you have any bugs or questions!
+# Currently being ported to VCC!
 
-This is a drag-and-drop Keypad/Passcode Prefab for VRChat worlds made in Unity **2019.4.29f** and **SDK3** with Udon. This prefab requires no coding from your part and is very easy to setup. Password and target door are both easily configurable, with optional support for custom activation scripts if wanting more advanced activations.
+This is a fork of the known keypad from Foorack, I'm currently porting it to be used on par with [UwUtils}(https://github.com/Reava/UwUtils) or standalone, with the latest Udon goodies (Like Remote String Loading) and in general, just a big refresh of it whilst keeping it mostly similar.
+
+! **I'm also rewriting this readme as I'm changing/updating things.**
+
+This is a drag-and-drop Keypad/Passcode Prefab for VRChat worlds made in Unity **2019.4.31f1** and **SDK3** with Udon. This prefab requires no coding from your part and is very easy to setup. Password and target door are both easily configurable, with optional support for custom activation scripts if wanting more advanced activations.
 
 ## **📥 Download:**
 
-**Note:** In the latest release the Keypad has been rewritten into UdonSharp. Don't worry! You don't have to touch UdonSharp code I promise! Simply install UdonSharp first and forget about it.
+**Note:** The Keypad has been rewritten into UdonSharp. Don't worry! You don't have to touch UdonSharp code I promise!
 
-After installing UdonSharp and Keypad: drag the Keypad prefab into your world, click on it, and click "Compile All From Sources". If you have any problems at all, please [**contact on Discord**](https://discord.gg/7xJdWNk). I would love to help with any Keypad-related problems!
+1. Make sure you have UdonSharp installed via the VCC (Projects > Manage project > Plus icon on the right of Udonsharp)
 
-[Download UdonSharp API](https://github.com/MerlinVR/UdonSharp/releases/), install and forget.
-
-[Download UdonKeypad v.2021.09.16.18.43](https://storage.foorack.com/download.php?id=21&token=ZinqfqvOjuhEqEuTwJU3LCHHf4bRqB3g) (Latest!)
+[Download latest](https://github.com/Reava/U-Keypad/releases/latest/)
 
 ## **✨ Setup Tutorial**
-
-**Important:** After installing UdonSharp and Keypad: drag the Keypad prefab into your world, click on it, and click "Compile All From Sources".
 
 **Settings:** Look at the settings provided on the **main Keypad object:**
 
@@ -49,6 +49,7 @@ There are 3 possible programs which are run at different stages: at success, at 
 | programGranted | "keypadGranted" | Runs at successful code    |
 | programDenied  | "keypadDenied"  | Runs at wrong code         |
 | programClosed  | "keypadClosed"  | Runs at pressing Clear/CLR |
+| -------------- |:---------------:| -------------------------- |
 
 ## **💙 Hope you enjoy it!**
 
