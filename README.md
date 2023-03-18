@@ -2,7 +2,7 @@
 
 ![keypad](https://user-images.githubusercontent.com/93742413/226081439-83517c55-0125-4e94-914a-80504318388e.png)
 
-# Currently being ported to VCC!
+# Currently being ported to [VCC](https://vcc.docs.vrchat.com/)!
 
 This is a fork of the known keypad from Foorack, I'm currently porting it to be used on par with [UwUtils](https://github.com/Reava/UwUtils) or standalone, with the latest Udon goodies (Like Remote String Loading) and in general, just a big refresh of it whilst keeping it mostly similar.
 
@@ -14,7 +14,7 @@ This is a drag-and-drop Keypad/Passcode Prefab for VRChat worlds made in Unity *
 
 **Note:** The Keypad has been rewritten into UdonSharp. Don't worry! You don't have to touch UdonSharp code I promise!
 
-1. Make sure you have UdonSharp installed via the VCC (Projects > Manage project > Plus icon on the right of Udonsharp)
+1. Make sure you have UdonSharp installed via the [VCC](https://vcc.docs.vrchat.com/) (Projects > Manage project > Plus icon on the right of Udonsharp)
 
 [Download latest](https://github.com/Reava/U-Keypad/releases/latest/)
 
@@ -49,7 +49,6 @@ There are 3 possible programs which are run at different stages: at success, at 
 | programGranted | "keypadGranted" | Runs at successful code    |
 | programDenied  | "keypadDenied"  | Runs at wrong code         |
 | programClosed  | "keypadClosed"  | Runs at pressing Clear/CLR |
-| -------------- |:---------------:| -------------------------- |
 
 ## **💙 Hope you enjoy it!**
 
