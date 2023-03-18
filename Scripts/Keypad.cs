@@ -19,16 +19,13 @@ namespace UwUtils
     public class Keypad : UdonSharpBehaviour
     {
 
-        private readonly string AUTHOR = "Foorack";
+        private readonly string AUTHOR = "Foorack, Fork by Reava_";
         private readonly string VERSION = "3.6";
         [Space]
         [SerializeField] private bool hideDoorsOnGranted = true;
-        [SerializeField] private string keypadPassword = "2580";
-        [SerializeField, Space] private GameObject[] DoorObjects = new GameObject[0];
+        [SerializeField] private string keypadPassword = "8462";
         [Space]
-        [Header("User settings")]
-        [Tooltip("If true, will automatically apply onGrant actions when an allowed user joins the world.")]
-        [SerializeField] private bool OnJoinGrant = false;
+        [SerializeField] private GameObject[] DoorObjects = new GameObject[0];
         [Tooltip("List of users that can just press the confirm button without the code to get permission")]
         [Space] public string[] allowList = new string[0];
         [Tooltip("List of users who even with the code cannot enter the code")]
@@ -63,6 +60,8 @@ namespace UwUtils
         [SerializeField] private GameObject[] ExtraObjectsToTurnOn = new GameObject[0];
         [SerializeField] private GameObject[] ExtraObjectsToTurnOff = new GameObject[0];
         [Space]
+        [Tooltip("If true, will automatically apply onGrant actions when an allowed user joins the world.")]
+        [SerializeField] private bool OnJoinGrant = false;
         [Tooltip("Teleports the user to the location of the transform set under on grant (Does not apply when On Join Grant)")]
         [SerializeField] private bool teleportOnGrant = false;
         [SerializeField] private Transform teleportDestination;
