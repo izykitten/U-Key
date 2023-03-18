@@ -14,7 +14,7 @@ using VRC.Udon.Common.Interfaces;
 
 namespace UwUtils
 {
-    [AddComponentMenu("UwUtils/Keypad")]
+    [AddComponentMenu("UwUtils/Keypad System")]
     [UdonBehaviourSyncMode(BehaviourSyncMode.None)]
     public class Keypad : UdonSharpBehaviour
     {
@@ -22,19 +22,20 @@ namespace UwUtils
         private readonly string AUTHOR = "Foorack";
         private readonly string VERSION = "3.6";
         [Space]
+        [SerializeField] private bool hideDoorsOnGranted = true;
         [SerializeField] private string keypadPassword = "2580";
-        [SerializeField] private bool hideDoorOnGranted = true;
-        [SerializeField] private GameObject[] DoorObjects = new GameObject[0];
+        [SerializeField, Space] private GameObject[] DoorObjects = new GameObject[0];
         [Space]
         [Header("User settings")]
-        [SerializeField] private bool autoGrantAllowedUsers = false;
+        [Tooltip("If true, will automatically apply onGrant actions when an allowed user joins the world.")]
+        [SerializeField] private bool OnJoinGrant = false;
         [Tooltip("List of users that can just press the confirm button without the code to get permission")]
-        public string[] allowList = new string[0];
+        [Space] public string[] allowList = new string[0];
         [Tooltip("List of users who even with the code cannot enter the code")]
-        public string[] denyList = new string[0];
+        [SerializeField] private string[] denyList = new string[0];
         [Space]
         [Header("Sound settings")]
-        [SerializeField] private bool useAudioFeedback;
+        [SerializeField] private bool useAudioFeedback = false;
         [SerializeField] private AudioSource feedbackSource = null;
         [SerializeField] private AudioClip soundDenied = null;
         [SerializeField] private AudioClip soundGranted = null;
@@ -47,35 +48,38 @@ namespace UwUtils
         [SerializeField] private string translationDenied = "DENIED"; // ReSharper disable once InconsistentNaming
         [SerializeField] private string translationGranted = "GRANTED"; // ReSharper disable once InconsistentNaming
         [Space]
-        [Header("Event trigger relays")
+        [Header("Per passcode actions (Hover over)")]
+        [Tooltip("When enabled, each code in 'additionalPasscodes' will toggle its own door in the 'additionalDoors' list, same for programsGranted")]
+        [SerializeField] private bool additionalKeySeparation = false;
+        [Space, SerializeField] private string[] additionalPasscodes = new string[0];
+        [SerializeField] private GameObject[] additionalDoors = new GameObject[0];
+        [Header("Event trigger relays")]
         [Space]
         [SerializeField] private UdonBehaviour[] programsClosed;
         [SerializeField] private UdonBehaviour[] programsDenied;
         [SerializeField] private UdonBehaviour[] programsGranted;
         [Space]
-        [Header("Per passcode actions (Hover over)")]
-        [Tooltip("When enabled, each code in 'additionalPasscodes' will toggle its own door in the 'additionalDoors' list, same for programsGranted")]
-        [SerializeField] private bool additionalKeySeparation = false;
-        [SerializeField] private string[] additionalPasscodes = new string[0];
-        [SerializeField] private GameObject[] additionalDoors = new GameObject[0];
-        [Space]
         [Header("Extra Functions/Settings")]
-        [SerializeField] private bool teleportOnGrant = false;
-        [SerializeField] private Transform teleportDestination;
-        [Range(0, 1), Tooltip("Use only one character")]
-        [SerializeField] private string replacePassWithChar = "*";
-        [Tooltip("When clear is hit after getting access, will revert the state of the 'doors' back to its original state.")]
-        [SerializeField] private bool RevertGrantedEffectsOnClear = true;
         [SerializeField] private GameObject[] ExtraObjectsToTurnOn = new GameObject[0];
         [SerializeField] private GameObject[] ExtraObjectsToTurnOff = new GameObject[0];
-        [SerializeField] private bool alsoSendInteractEventOnGrantedPrograms = false;
-        [SerializeField] private string eventNameOnClosed = "_keypadClosed";
-        [SerializeField] private string eventNameOnDenied = "_keypadDenied";
-        [SerializeField] private string eventNameOnGranted = "_keypadGranted";
+        [Space]
+        [Tooltip("Teleports the user to the location of the transform set under on grant (Does not apply when On Join Grant)")]
+        [SerializeField] private bool teleportOnGrant = false;
+        [SerializeField] private Transform teleportDestination;
+        [Tooltip("This will give the user a tag other scripts can read, useful to pair with UwUtils scripts. (Empty to disable)")]
+        [SerializeField] private string TagName = "vip";
         [Space]
         [Header("Advanced Section")]
-        [SerializeField] private int MaxInputLength = 8;
+        [Tooltip("When clear is hit after getting access, will revert the state of the 'doors' back to its original state.")]
+        [SerializeField] private bool OnClearRevertDoors = true;
         [SerializeField] private bool useDisplay = true;
+        [SerializeField] private int MaxInputLength = 8;
+        [Tooltip("Will replace password being typed to this character to hide it")]
+        [SerializeField] private bool HidePasswordTyped = true;
+        [SerializeField] private char replacePassWithChar = '*';
+        [SerializeField] private string eventNameOnClosed = "_interact";
+        [SerializeField] private string eventNameOnDenied = "_interact";
+        [SerializeField] private string eventNameOnGranted = "_interact";
         [Space]
         [Header("Warning: No support will be given if logging was disabled.")]
         [SerializeField] private bool enableLogging = true;
@@ -89,6 +93,7 @@ namespace UwUtils
         private string[] _solutions;
         private GameObject[] _doors;
         private string loadedString;
+        private bool isGranted;
 
         #region Util Functions
         private void Log(string value)
@@ -143,9 +148,9 @@ namespace UwUtils
                 keypadPassword = Random.value.ToString();
             }
 
-            if (internalKeypadDisplay == null)
+            if (internalKeypadDisplay == null && useDisplay)
             {
-                LogError("Display is not set! This is not supported! If you do not want a display then just disable the display object. Dying...");
+                LogError("Display is not set! Switching to not using a display, please set this correctly or check references !");
                 useDisplay = false;
             }
 
@@ -219,6 +224,8 @@ namespace UwUtils
             Log("Keypad started!");
         }
 
+        public void _TogglePassVisibility() => HidePasswordTyped = !HidePasswordTyped;
+
         // ReSharper disable once InconsistentNaming
         private void CLR()
         {
@@ -228,7 +235,7 @@ namespace UwUtils
             foreach (GameObject door in _doors)
             {
                 if (!door) continue;
-                door.SetActive(hideDoorOnGranted);
+                door.SetActive(hideDoorsOnGranted);
             }
 
             if (programsClosed != null)
@@ -252,18 +259,12 @@ namespace UwUtils
             // Check if user is on allow list
             foreach (var entry in allowList)
             {
-                if (entry == username)
-                {
-                    isOnAllow = true;
-                }
+                if (entry == username) isOnAllow = true;
             }
             // Check if user is on deny list
             foreach (var entry in denyList)
             {
-                if (entry == username)
-                {
-                    isOnDeny = true;
-                }
+                if (entry == username) isOnDeny = true;
             }
 
             var isCorrect = false;
@@ -290,16 +291,16 @@ namespace UwUtils
                     {
                         if (door == correctDoor)
                         {
-                            door.SetActive(!hideDoorOnGranted);
+                            door.SetActive(!hideDoorsOnGranted);
                         }
                         else
                         {
-                            door.SetActive(hideDoorOnGranted);
+                            door.SetActive(hideDoorsOnGranted);
                         }
                     }
                     else
                     {
-                        door.SetActive(!hideDoorOnGranted);
+                        door.SetActive(!hideDoorsOnGranted);
                     }
                 }
 
@@ -318,6 +319,8 @@ namespace UwUtils
                     }
                 }
 
+                if (teleportOnGrant) Networking.LocalPlayer.TeleportTo(teleportDestination.position, teleportDestination.rotation);
+                isGranted = true;
                 _buffer = "";
             }
             else
@@ -329,7 +332,7 @@ namespace UwUtils
                 foreach (var door in _doors)
                 {
                     if (door == gameObject) continue;
-                    door.SetActive(hideDoorOnGranted);
+                    door.SetActive(hideDoorsOnGranted);
                 }
 
                 if (soundDenied != null) feedbackSource.PlayOneShot(soundDenied);
@@ -343,35 +346,43 @@ namespace UwUtils
                         prog.SendCustomEvent(eventNameOnDenied);
                     }
                 }
-
+                isGranted = false;
                 _buffer = "";
             }
         }
 
         private void PrintPassword()
         {
-            var pass = "*";
-            for (var i = 1; i < _buffer.Length; i++)
+            if (HidePasswordTyped)
             {
-                pass += " *";
+                var pass = "*";
+                for (var i = 1; i < _buffer.Length; i++)
+                {
+                    pass += " *";
+                }
+                internalKeypadDisplay.text = pass;
             }
-
-            internalKeypadDisplay.text = pass;
+            else
+            {
+                internalKeypadDisplay.text = _buffer;
+            }
         }
 
         public void ButtonInput(string inputValue)
         {
             if (inputValue == "CLR")
             {
+                isGranted = false;
                 CLR();
             }
             else if (inputValue == "OK")
             {
+                if(isGranted && teleportOnGrant) Networking.LocalPlayer.TeleportTo(teleportDestination.position, teleportDestination.rotation);
                 OK();
             }
             else
             {
-                if (_buffer.Length == 8)
+                if (_buffer.Length == MaxInputLength)
                 {
                     Log("Limit reached!");
                 }
