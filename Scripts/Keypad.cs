@@ -79,6 +79,11 @@ namespace UwUtils
         [SerializeField] private string eventNameOnClosed = "_interact";
         [SerializeField] private string eventNameOnDenied = "_interact";
         [SerializeField] private string eventNameOnGranted = "_interact";
+        [Space, Tooltip(" to update the allow list without updating the world")]
+        [SerializeField] private bool useRemoteString = false;
+        [Tooltip("You can use Pastebin RAW")]
+        [SerializeField] private VRCUrl allowListLink = null;
+        [SerializeField] private char splitRemoteStringWith = '*';
         [Space]
         [Header("Warning: No support will be given if logging was disabled.")]
         [SerializeField] private bool enableLogging = true;
@@ -93,6 +98,9 @@ namespace UwUtils
         private GameObject[] _doors;
         private string loadedString;
         private bool isGranted;
+        private string[] strArr = new string[0];
+        private bool isOnAllow = false;
+        private GameObject correctDoor = null;
 
         #region Util Functions
         private void Log(string value)
@@ -210,17 +218,43 @@ namespace UwUtils
             _solutions = new string[additionalPasscodes.Length + 1];
             _doors = new GameObject[DoorObjects.Length + 1];
             _solutions[0] = keypadPassword;
-            for (var i = 0; i != additionalPasscodes.Length; i++)
+            for (int i = 0; i != additionalPasscodes.Length; i++)
             {
                 _solutions[i + 1] = additionalPasscodes[i];
             }
-            for (var i = 0; i != DoorObjects.Length; i++)
+            for (int i = 0; i != DoorObjects.Length; i++)
             {
                 _doors[i + 1] = DoorObjects[i];
             }
 
             internalKeypadDisplay.text = translationWaitcode;
             Log("Keypad started!");
+            if(useRemoteString && allowListLink != null) VRCStringDownloader.LoadUrl(allowListLink, (IUdonEventReceiver)this);
+        }
+
+        public override void OnStringLoadSuccess(IVRCStringDownload result)
+        {
+            loadedString += result.Result;
+            strArr = loadedString.Split(splitRemoteStringWith);
+            if (OnJoinGrant)
+            {
+                var username = Networking.LocalPlayer == null ? "UnityEditor" : Networking.LocalPlayer.displayName;
+                foreach (string u in strArr)
+                {
+                    if (u == null) continue;
+                    if (u == username)
+                    {
+
+                    }
+                }
+            }
+            string[] tempList = new string[allowList.Length + strArr.Length];
+            if (enableLogging) Debug.Log("[Reava_/UwUtils/Keypad]: String successfully loaded: " + loadedString + "On: " + gameObject.name, gameObject);
+        }
+
+        public override void OnStringLoadError(IVRCStringDownload result)
+        {
+            Debug.LogError("[Reava_/UwUtils/Keypad]: String loading failed: " + result.Error + "| Error Code: " + result.ErrorCode + "On: " + gameObject.name, gameObject);
         }
 
         public void _TogglePassVisibility() => HidePasswordTyped = !HidePasswordTyped;
@@ -248,26 +282,67 @@ namespace UwUtils
 
             _buffer = "";
         }
+        private void _grantEvent()
+        {
+            Log(isOnAllow ? "GRANTED through allow list!" : "Passcode GRANTED!");
+            internalKeypadDisplay.text = translationGranted;
+
+            foreach (GameObject door in _doors)
+            {
+                if (!door) continue;
+                if (additionalKeySeparation)
+                {
+                    if (door == correctDoor)
+                    {
+                        door.SetActive(!hideDoorsOnGranted);
+                    }
+                    else
+                    {
+                        door.SetActive(hideDoorsOnGranted);
+                    }
+                }
+                else
+                {
+                    door.SetActive(!hideDoorsOnGranted);
+                }
+            }
+
+            if (soundGranted != null)
+            {
+                feedbackSource.PlayOneShot(soundGranted);
+            }
+
+            if (programsGranted != null)
+            {
+                foreach (UdonBehaviour prog in programsGranted)
+                {
+                    if (!prog) continue;
+                    prog.SetProgramVariable("keypadCode", _buffer);
+                    prog.SendCustomEvent(eventNameOnGranted);
+                }
+            }
+            isGranted = true;
+        }
 
         // ReSharper disable once InconsistentNaming
         private void OK()
         {
-            var isOnAllow = false;
+            isOnAllow = false;
             var isOnDeny = false;
             var username = Networking.LocalPlayer == null ? "UnityEditor" : Networking.LocalPlayer.displayName;
             // Check if user is on allow list
-            foreach (var entry in allowList)
+            foreach (string entry in allowList)
             {
                 if (entry == username) isOnAllow = true;
             }
             // Check if user is on deny list
-            foreach (var entry in denyList)
+            foreach (string entry in denyList)
             {
                 if (entry == username) isOnDeny = true;
             }
 
             var isCorrect = false;
-            GameObject correctDoor = null;
+            correctDoor = null;
             for (var i = 0; i != _solutions.Length; i++)
             {
                 if (_solutions[i] != _buffer) continue;
@@ -280,46 +355,7 @@ namespace UwUtils
             // Check if pass is correct and not on deny, or if is on allow list.
             if ((isCorrect && !isOnDeny) || isOnAllow)
             {
-                Log(isOnAllow ? "GRANTED through allow list!" : "Passcode GRANTED!");
-                internalKeypadDisplay.text = translationGranted;
-
-                foreach (GameObject door in _doors)
-                {
-                    if (!door) continue;
-                    if (additionalKeySeparation)
-                    {
-                        if (door == correctDoor)
-                        {
-                            door.SetActive(!hideDoorsOnGranted);
-                        }
-                        else
-                        {
-                            door.SetActive(hideDoorsOnGranted);
-                        }
-                    }
-                    else
-                    {
-                        door.SetActive(!hideDoorsOnGranted);
-                    }
-                }
-
-                if (soundGranted != null)
-                {
-                    feedbackSource.PlayOneShot(soundGranted);
-                }
-
-                if (programsGranted != null)
-                {
-                    foreach(UdonBehaviour prog in programsGranted)
-                    {
-                        if (!prog) continue;
-                        prog.SetProgramVariable("keypadCode", _buffer);
-                        prog.SendCustomEvent(eventNameOnGranted);
-                    }
-                }
-
                 if (teleportOnGrant) Networking.LocalPlayer.TeleportTo(teleportDestination.position, teleportDestination.rotation);
-                isGranted = true;
                 _buffer = "";
             }
             else
@@ -328,9 +364,9 @@ namespace UwUtils
                 Log("Passcode DENIED!");
                 internalKeypadDisplay.text = translationDenied;
 
-                foreach (var door in _doors)
+                foreach (GameObject door in _doors)
                 {
-                    if (door == gameObject) continue;
+                    if (door == null) continue;
                     door.SetActive(hideDoorsOnGranted);
                 }
 
