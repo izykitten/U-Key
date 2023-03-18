@@ -32,9 +32,10 @@ namespace UwUtils
         [Space]
         [Header("Sound settings")]
         [SerializeField] private bool useAudioFeedback;
-        [SerializeField] private AudioSource soundDenied = null;
-        [SerializeField] private AudioSource soundGranted = null;
-        [SerializeField] private AudioSource soundButton = null;
+        [SerializeField] private AudioSource feedbackSource = null;
+        [SerializeField] private AudioClip soundDenied = null;
+        [SerializeField] private AudioClip soundGranted = null;
+        [SerializeField] private AudioClip soundButton = null;
         [Space]
         [Header("Text display")]
         [SerializeField] private string translationPasscode = "PASSCODE"; // ReSharper disable once InconsistentNaming
@@ -58,7 +59,8 @@ namespace UwUtils
         [SerializeField] private VRCUrl remoteConfigUrl;
         [HideInInspector] public string[] strArr;
         [Space]
-        public bool disableDebugging = false;
+        [Header("Warning: No support will be given if logging was disabled.")]
+        public bool enableLogging = true;
         // Debugging
         private string _keypadId;
         private string _prefix;
@@ -72,21 +74,21 @@ namespace UwUtils
         #region Util Functions
         private void Log(string value)
         {
-            if (disableDebugging != true)
+            if (enableLogging)
             {
                 Debug.Log(_prefix + value, gameObject);
             }
         }
         private void LogWarning(string value)
         {
-            if (disableDebugging != true)
+            if (enableLogging)
             {
                 Debug.LogWarning(_prefix + value, gameObject);
             }
         }
         private void LogError(string value)
         {
-            if (disableDebugging != true)
+            if (enableLogging)
             {
                 Debug.LogError(_prefix + value, gameObject);
             }
@@ -209,7 +211,7 @@ namespace UwUtils
             {
                 strArr = loadedString.Split(',');
             }
-            if (!disableDebugging) Debug.Log("[Reava_/UwUtils/Keypad]: String successfully loaded: " + loadedString + "On: " + gameObject.name, gameObject);
+            if (enableLogging) Debug.Log("[Reava_/UwUtils/Keypad]: String successfully loaded: " + loadedString + "On: " + gameObject.name, gameObject);
         }
         public override void OnStringLoadError(IVRCStringDownload result)
         {
@@ -301,7 +303,7 @@ namespace UwUtils
 
                 if (soundGranted != null)
                 {
-                    soundGranted.Play();
+                    feedbackSource.PlayOneShot(soundGranted);
                 }
 
                 if (programGranted != null)
@@ -328,7 +330,7 @@ namespace UwUtils
                     door.SetActive(hideDoorOnGranted);
                 }
 
-                if (soundDenied != null) soundDenied.Play();
+                if (soundDenied != null) feedbackSource.PlayOneShot(soundDenied);
 
                 if (programDenied != null)
                 {
@@ -374,7 +376,7 @@ namespace UwUtils
                     Log("Buffer appended: " + inputValue);
                     if (soundButton != null)
                     {
-                        soundButton.Play();
+                        feedbackSource.PlayOneShot(soundButton);
                     }
                 }
             }
