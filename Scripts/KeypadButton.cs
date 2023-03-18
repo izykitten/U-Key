@@ -86,7 +86,7 @@ namespace UwUtils
 
         public override void Interact()
         {
-            if (Networking.LocalPlayer != null && Networking.LocalPlayer.IsUserInVR())
+            if (Networking.LocalPlayer != null/* && Networking.LocalPlayer.IsUserInVR()*/) // Why was it checking for user in vr???
             {
                 ButtonPressed();
             }
