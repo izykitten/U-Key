@@ -7431,7 +7431,7 @@ RectTransform:
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
   m_AnchoredPosition: {x: -0, y: 23.9}
-  m_SizeDelta: {x: 950, y: 200}
+  m_SizeDelta: {x: 1200, y: 220}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!222 &240687409390788342
 CanvasRenderer:
@@ -7460,10 +7460,10 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: BOOTING
+  m_text: booting
   m_isRightToLeft: 0
-  m_fontAsset: {fileID: 11400000, guid: b3341a6f815842746ad96c8e079e057f, type: 2}
-  m_sharedMaterial: {fileID: -5496673140729931755, guid: b3341a6f815842746ad96c8e079e057f,
+  m_fontAsset: {fileID: 11400000, guid: 93a8bb37a2165ce43a9ba03ffe1e0ec6, type: 2}
+  m_sharedMaterial: {fileID: 21751618869935566, guid: 93a8bb37a2165ce43a9ba03ffe1e0ec6,
     type: 2}
   m_fontSharedMaterials: []
   m_fontMaterial: {fileID: 0}
@@ -7488,12 +7488,12 @@ MonoBehaviour:
   m_faceColor:
     serializedVersion: 2
     rgba: 4294967295
-  m_fontSize: 140
+  m_fontSize: 200
   m_fontSizeBase: 36
   m_fontWeight: 400
   m_enableAutoSizing: 1
   m_fontSizeMin: 18
-  m_fontSizeMax: 140
+  m_fontSizeMax: 200
   m_fontStyle: 0
   m_HorizontalAlignment: 2
   m_VerticalAlignment: 4096
@@ -12861,7 +12861,6 @@ MonoBehaviour:
   keypadPassword: 8462
   DoorObjects:
   - {fileID: 0}
-  OnJoinGrant: 0
   allowList: []
   denyList: []
   useAudioFeedback: 1
@@ -12881,6 +12880,7 @@ MonoBehaviour:
   programsGranted: []
   ExtraObjectsToTurnOn: []
   ExtraObjectsToTurnOff: []
+  OnJoinGrant: 0
   teleportOnGrant: 0
   teleportDestination: {fileID: 0}
   TagName: vip
@@ -12892,6 +12892,10 @@ MonoBehaviour:
   eventNameOnClosed: _interact
   eventNameOnDenied: _interact
   eventNameOnGranted: _interact
+  useRemoteString: 0
+  allowListLink:
+    url: 
+  splitRemoteStringWith: 44
   enableLogging: 1
 --- !u!114 &4737459655680067385
 MonoBehaviour:
@@ -12954,7 +12958,7 @@ RectTransform:
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
   m_AnchoredPosition: {x: -0, y: 23.9}
-  m_SizeDelta: {x: 950, y: 200}
+  m_SizeDelta: {x: 1200, y: 220}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!222 &6172547503444004972
 CanvasRenderer:
@@ -12983,10 +12987,10 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: BOOTING
+  m_text: booting
   m_isRightToLeft: 0
-  m_fontAsset: {fileID: 11400000, guid: b3341a6f815842746ad96c8e079e057f, type: 2}
-  m_sharedMaterial: {fileID: -5496673140729931755, guid: b3341a6f815842746ad96c8e079e057f,
+  m_fontAsset: {fileID: 11400000, guid: 93a8bb37a2165ce43a9ba03ffe1e0ec6, type: 2}
+  m_sharedMaterial: {fileID: 21751618869935566, guid: 93a8bb37a2165ce43a9ba03ffe1e0ec6,
     type: 2}
   m_fontSharedMaterials: []
   m_fontMaterial: {fileID: 0}
@@ -13011,12 +13015,12 @@ MonoBehaviour:
   m_faceColor:
     serializedVersion: 2
     rgba: 4294967295
-  m_fontSize: 140
+  m_fontSize: 200
   m_fontSizeBase: 36
   m_fontWeight: 400
   m_enableAutoSizing: 1
   m_fontSizeMin: 18
-  m_fontSizeMax: 140
+  m_fontSizeMax: 200
   m_fontStyle: 0
   m_HorizontalAlignment: 2
   m_VerticalAlignment: 4096
