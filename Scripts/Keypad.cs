@@ -96,9 +96,9 @@ namespace UwUtils
         private string _buffer;
         private string[] _solutions;
         private GameObject[] _doors;
-        [SerializeField] private string loadedString;
+        private string loadedString;
         private bool isGranted;
-        [SerializeField] private string[] strArr = new string[0];
+        private string[] strArr = new string[0];
         private bool isOnAllow = false;
         private GameObject correctDoor = null;
         private string username = null;
@@ -228,7 +228,7 @@ namespace UwUtils
                 _doors[i + 1] = DoorObjects[i];
             }
             username = Networking.LocalPlayer == null ? "UnityEditor" : Networking.LocalPlayer.displayName;
-            internalKeypadDisplay.text = translationWaitcode;
+            if(useDisplay) internalKeypadDisplay.text = translationWaitcode;
             if (OnJoinGrant && allowList != null)
             {
                 foreach (string u in allowList)
@@ -260,12 +260,12 @@ namespace UwUtils
                 }
             }
             string[] tempList = new string[allowList.Length + strArr.Length];
-            if (enableLogging) Debug.Log("[Reava_/UwUtils/Keypad]: String successfully loaded: " + loadedString + "On: " + gameObject.name, gameObject);
+            if (enableLogging) Log("String successfully loaded: " + loadedString);
         }
 
         public override void OnStringLoadError(IVRCStringDownload result)
         {
-            Debug.LogError("[Reava_/UwUtils/Keypad]: String loading failed: " + result.Error + "| Error Code: " + result.ErrorCode + "On: " + gameObject.name, gameObject);
+            LogError("String loading failed: " + result.Error + "| Error Code: " + result.ErrorCode);
         }
 
         public void _TogglePassVisibility() => HidePasswordTyped = !HidePasswordTyped;
@@ -274,7 +274,7 @@ namespace UwUtils
         private void CLR()
         {
             Log("Passcode CLEAR!");
-            internalKeypadDisplay.text = translationWaitcode;
+            if (useDisplay) internalKeypadDisplay.text = translationWaitcode;
             if(OnClearRevertDoors && isGranted)
             {
                 foreach (GameObject door in _doors)
@@ -283,6 +283,7 @@ namespace UwUtils
                     door.SetActive(hideDoorsOnGranted);
                 }
                 isGranted = false;
+                Networking.LocalPlayer.SetPlayerTag("rank", "Visitor");
             }
             if (programsClosed != null)
             {
@@ -297,7 +298,7 @@ namespace UwUtils
         private void _grantEvent()
         {
             Log(isOnAllow ? "GRANTED through allow list!" : "Passcode GRANTED!");
-            internalKeypadDisplay.text = translationGranted;
+            if (useDisplay) internalKeypadDisplay.text = translationGranted;
             if (TagName != null) Networking.LocalPlayer.SetPlayerTag("rank", TagName);
             foreach (GameObject door in _doors)
             {
@@ -382,7 +383,7 @@ namespace UwUtils
             {
                 // Do not announce to user that they are on deny list.
                 Log("Passcode DENIED!");
-                internalKeypadDisplay.text = translationDenied;
+                if (useDisplay) internalKeypadDisplay.text = translationDenied;
 
                 foreach (GameObject door in _doors)
                 {
@@ -415,11 +416,11 @@ namespace UwUtils
                 {
                     pass += " *";
                 }
-                internalKeypadDisplay.text = pass;
+                if (useDisplay) internalKeypadDisplay.text = pass;
             }
             else
             {
-                internalKeypadDisplay.text = _buffer;
+                if (useDisplay) internalKeypadDisplay.text = _buffer;
             }
         }
 
@@ -432,7 +433,7 @@ namespace UwUtils
             }
             else if (inputValue == "OK")
             {
-                if(isGranted && teleportOnGrant) Networking.LocalPlayer.TeleportTo(teleportDestination.position, teleportDestination.rotation);
+                if(isGranted && teleportOnGrant && teleportDestination != null) Networking.LocalPlayer.TeleportTo(teleportDestination.position, teleportDestination.rotation);
                 OK();
             }
             else
