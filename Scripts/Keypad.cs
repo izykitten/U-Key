@@ -83,7 +83,7 @@ namespace UwUtils
         [SerializeField] private bool useRemoteString = false;
         [Tooltip("You can use Pastebin RAW")]
         [SerializeField] private VRCUrl allowListLink = null;
-        [SerializeField] private char splitRemoteStringWith = '*';
+        [SerializeField] private char splitRemoteStringWith = ',';
         [Space]
         [Header("Warning: No support will be given if logging was disabled.")]
         [SerializeField] private bool enableLogging = true;
@@ -96,11 +96,12 @@ namespace UwUtils
         private string _buffer;
         private string[] _solutions;
         private GameObject[] _doors;
-        private string loadedString;
+        [SerializeField] private string loadedString;
         private bool isGranted;
-        private string[] strArr = new string[0];
+        [SerializeField] private string[] strArr = new string[0];
         private bool isOnAllow = false;
         private GameObject correctDoor = null;
+        private string username = null;
 
         #region Util Functions
         private void Log(string value)
@@ -226,8 +227,19 @@ namespace UwUtils
             {
                 _doors[i + 1] = DoorObjects[i];
             }
-
+            username = Networking.LocalPlayer == null ? "UnityEditor" : Networking.LocalPlayer.displayName;
             internalKeypadDisplay.text = translationWaitcode;
+            if (OnJoinGrant && allowList != null)
+            {
+                foreach (string u in allowList)
+                {
+                    if (u == null) continue;
+                    if (u == username)
+                    {
+                        _grantEvent();
+                    }
+                }
+            }
             Log("Keypad started!");
             if(useRemoteString && allowListLink != null) VRCStringDownloader.LoadUrl(allowListLink, (IUdonEventReceiver)this);
         }
@@ -235,16 +247,15 @@ namespace UwUtils
         public override void OnStringLoadSuccess(IVRCStringDownload result)
         {
             loadedString += result.Result;
-            strArr = loadedString.Split(splitRemoteStringWith);
-            if (OnJoinGrant)
+            if(loadedString != null) strArr = loadedString.Split(splitRemoteStringWith);
+            if (OnJoinGrant && strArr.Length > 0)
             {
-                var username = Networking.LocalPlayer == null ? "UnityEditor" : Networking.LocalPlayer.displayName;
                 foreach (string u in strArr)
                 {
                     if (u == null) continue;
                     if (u == username)
                     {
-
+                        _grantEvent();
                     }
                 }
             }
@@ -264,13 +275,15 @@ namespace UwUtils
         {
             Log("Passcode CLEAR!");
             internalKeypadDisplay.text = translationWaitcode;
-
-            foreach (GameObject door in _doors)
+            if(OnClearRevertDoors && isGranted)
             {
-                if (!door) continue;
-                door.SetActive(hideDoorsOnGranted);
+                foreach (GameObject door in _doors)
+                {
+                    if (door == null) continue;
+                    door.SetActive(hideDoorsOnGranted);
+                }
+                isGranted = false;
             }
-
             if (programsClosed != null)
             {
                 foreach(UdonBehaviour prog in programsClosed)
@@ -279,17 +292,16 @@ namespace UwUtils
                     prog.SendCustomEvent(eventNameOnClosed);
                 }
             }
-
             _buffer = "";
         }
         private void _grantEvent()
         {
             Log(isOnAllow ? "GRANTED through allow list!" : "Passcode GRANTED!");
             internalKeypadDisplay.text = translationGranted;
-
+            if (TagName != null) Networking.LocalPlayer.SetPlayerTag("rank", TagName);
             foreach (GameObject door in _doors)
             {
-                if (!door) continue;
+                if (door == null) continue;
                 if (additionalKeySeparation)
                 {
                     if (door == correctDoor)
@@ -329,11 +341,18 @@ namespace UwUtils
         {
             isOnAllow = false;
             var isOnDeny = false;
-            var username = Networking.LocalPlayer == null ? "UnityEditor" : Networking.LocalPlayer.displayName;
+            username = Networking.LocalPlayer == null ? "UnityEditor" : Networking.LocalPlayer.displayName;
             // Check if user is on allow list
             foreach (string entry in allowList)
             {
                 if (entry == username) isOnAllow = true;
+            }
+            if(strArr.Length > 0)
+            {
+                foreach (string entry in strArr)
+                {
+                    if (entry == username) isOnAllow = true;
+                }
             }
             // Check if user is on deny list
             foreach (string entry in denyList)
@@ -349,13 +368,14 @@ namespace UwUtils
                 isCorrect = true;
                 if (i < _doors.Length)
                 {
-                    correctDoor = _doors[i];
+                    if (_doors[i] == null) correctDoor = _doors[i];
                 }
             }
             // Check if pass is correct and not on deny, or if is on allow list.
             if ((isCorrect && !isOnDeny) || isOnAllow)
             {
-                if (teleportOnGrant) Networking.LocalPlayer.TeleportTo(teleportDestination.position, teleportDestination.rotation);
+                _grantEvent();
+                if (teleportOnGrant && teleportDestination != null) Networking.LocalPlayer.TeleportTo(teleportDestination.position, teleportDestination.rotation);
                 _buffer = "";
             }
             else
