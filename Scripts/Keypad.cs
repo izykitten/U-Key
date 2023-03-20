@@ -443,6 +443,10 @@ namespace UwUtils
                 if(isGranted && teleportOnGrant && teleportDestination != null) Networking.LocalPlayer.TeleportTo(teleportDestination.position, teleportDestination.rotation);
                 OK();
             }
+            else if (inputValue == "SHOW")
+            {
+                _TogglePassVisibility();
+            }
             else
             {
                 if (_buffer.Length == MaxInputLength)

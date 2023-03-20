@@ -75,7 +75,7 @@ namespace UwUtils
                 buttonValue = gameObject.name.Substring(12);
             }
 
-            if (buttonValue.Length != 1 && buttonValue != "OK" && buttonValue != "CLR")
+            if (buttonValue.Length != 1 && buttonValue != "OK" && buttonValue != "CLR" && buttonValue != "SHOW")
             {
                 LogError("Button has invalid value! Resetting to 'X'. OldValue: '" + buttonValue + "'.");
                 buttonValue = "X";
