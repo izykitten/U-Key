@@ -268,7 +268,14 @@ namespace UwUtils
             LogError("String loading failed: " + result.Error + "| Error Code: " + result.ErrorCode);
         }
 
-        public void _TogglePassVisibility() => HidePasswordTyped = !HidePasswordTyped;
+        public void _TogglePassVisibility()
+        {
+            HidePasswordTyped = !HidePasswordTyped;
+            if(_buffer.Length > 0)
+            {
+                PrintPassword();
+            }
+        }
 
         // ReSharper disable once InconsistentNaming
         private void CLR()
