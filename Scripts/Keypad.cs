@@ -228,6 +228,14 @@ namespace UwUtils
                 replacePassWithChar = '*';
             }
 
+            if(translationWaitcode == null || translationDenied == null || translationGranted == null)
+            {
+                LogError("Translation code cannot be empty, resetting empty values.");
+                if (translationWaitcode == null) translationWaitcode = "PASSCODE";
+                if (translationDenied == null) translationDenied = "DENIED";
+                if (translationGranted == null) translationGranted = "GRANTED";
+            }
+
             // Merge primary solution/door with additional solutions/doors.
             // This makes coding and loops more streamlined.
             _solutions = new string[additionalPasscodes.Length + 1];
