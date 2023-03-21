@@ -1273,19 +1273,19 @@ MonoBehaviour:
       Data: 3
     - Name: 
       Entry: 7
-      Data: 81|UnityEngine.HeaderAttribute, UnityEngine.CoreModule
-    - Name: header
-      Entry: 1
-      Data: Scripts to send a custom event to on Clear/Deny/Granted actions
+      Data: 81|UnityEngine.SpaceAttribute, UnityEngine.CoreModule
+    - Name: height
+      Entry: 4
+      Data: 8
     - Name: 
       Entry: 8
       Data: 
     - Name: 
       Entry: 7
-      Data: 82|UnityEngine.SpaceAttribute, UnityEngine.CoreModule
-    - Name: height
-      Entry: 4
-      Data: 8
+      Data: 82|UnityEngine.HeaderAttribute, UnityEngine.CoreModule
+    - Name: header
+      Entry: 1
+      Data: Scripts to send a custom event to on Clear/Deny/Granted actions
     - Name: 
       Entry: 8
       Data: 

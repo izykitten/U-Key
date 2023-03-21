@@ -7,11 +7,6 @@ using TMPro;
 using VRC.SDK3.StringLoading;
 using VRC.Udon.Common.Interfaces;
 
-// ReSharper disable MemberCanBeMadeStatic.Local
-// ReSharper disable once CheckNamespace
-
-// PORTING FROM FOORACK TO UWUTILS
-
 namespace UwUtils
 {
     [AddComponentMenu("UwUtils/Keypad System")]
@@ -40,18 +35,12 @@ namespace UwUtils
         [Space]
         [Header("Text display")]
         [Space]
+        [SerializeField] private string translationWaitcode = "PASSCODE";
+        [SerializeField] private string translationDenied = "DENIED";
+        [SerializeField] private string translationGranted = "GRANTED";
         [SerializeField] private TextMeshProUGUI internalKeypadDisplay = null;
-        [SerializeField] private string translationWaitcode = "PASSCODE"; // ReSharper disable once InconsistentNaming
-        [SerializeField] private string translationDenied = "DENIED"; // ReSharper disable once InconsistentNaming
-        [SerializeField] private string translationGranted = "GRANTED"; // ReSharper disable once InconsistentNaming
         [Space]
-        [Header("Per passcode actions (Hover over)")]
-        [Tooltip("When enabled, each code in 'additionalPasscodes' will toggle its own door in the 'additionalDoors' list, same for programsGranted")]
-        [SerializeField] private bool additionalKeySeparation = false;
-        [Space, SerializeField] private string[] additionalPasscodes = new string[0];
-        [SerializeField] private GameObject[] additionalDoors = new GameObject[0];
         [Header("Scripts to send a custom event to on Clear/Deny/Granted actions")]
-        [Space]
         [SerializeField] private UdonBehaviour[] programs;
         [Space]
         [Header("Extra Functions/Settings")]
@@ -87,6 +76,12 @@ namespace UwUtils
         [Tooltip("You can use Pastebin RAW")]
         [SerializeField] private VRCUrl allowListLink = null;
         [SerializeField] private char splitRemoteStringWith = ',';
+        [Space]
+        [Header("Per passcode actions (Hover over)")]
+        [Tooltip("When enabled, each code in 'additionalPasscodes' will toggle its own door in the 'additionalDoors' list, same for programsGranted")]
+        [SerializeField] private bool additionalKeySeparation = false;
+        [Space, SerializeField] private string[] additionalPasscodes = new string[0];
+        [SerializeField] private GameObject[] additionalDoors = new GameObject[0];
         [Space]
         [Header("Warning: No support will be given if logging was disabled.")]
         [SerializeField] private bool enableLogging = true;
@@ -320,6 +315,22 @@ namespace UwUtils
                 else
                 {
                     door.SetActive(!hideDoorsOnGranted);
+                }
+            }
+            if(ExtraObjectsToTurnOn.Length > 0) // Turn on objects in ExtraObjectsToTurnOn array if there are any
+            {
+                foreach (GameObject o in ExtraObjectsToTurnOn)
+                {
+                    if (o == null) continue;
+                    o.SetActive(true);
+                }
+            }
+            if (ExtraObjectsToTurnOff.Length > 0) // Turn off objects in ExtraObjectsToTurnOn array if there are any
+            {
+                foreach (GameObject o in ExtraObjectsToTurnOff)
+                {
+                    if (o == null) continue;
+                    o.SetActive(true);
                 }
             }
             if (soundGranted != null) feedbackSource.PlayOneShot(soundGranted);
