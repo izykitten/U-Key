@@ -125,10 +125,7 @@ namespace UwUtils
         }
         private void Die()
         {
-            // Crash.
-            // ReSharper disable once PossibleNullReferenceException
-            // ReSharper disable once ReturnValueOfPureMethodIsNotUsed
-            ((string)null).ToString();
+            this.gameObject.GetComponent<UdonBehaviour>().enabled = false;
         }
         #endregion Util Functions
 
@@ -176,6 +173,7 @@ namespace UwUtils
                 LogError("Allow list was larger than 999, this is most likely unintentional, resetting to 0.");
                 allowList = new string[0];
             }
+
             if (denyList.Length > 999)
             {
                 LogError("Allow list was larger than 999, this is most likely unintentional, resetting to 0.");
@@ -204,13 +202,31 @@ namespace UwUtils
                 DoorObjects = new GameObject[0];
             }
 
-            if (additionalKeySeparation && additionalPasscodes.Length != DoorObjects.Length)
+            if (additionalKeySeparation && additionalPasscodes.Length != additionalDoors.Length)
             {
                 LogError("Key separation was enabled, but the number of additional solutions is not equal to the number of additional doors, " +
-                    "resetting to False. Please read the documentation what this setting does or contact for help.");
+                    "resetting to False. Please read the documentation what this setting does.");
                 additionalKeySeparation = false;
             }
+
+            if (additionalDoors.Length > 999)
+            {
+                LogError("Additional doors list was larger than 999, this is most likely unintentional, resetting to 0.");
+                denyList = new string[0];
+            }
             Log("Additional key separation is: " + additionalKeySeparation);
+
+            if(useRemoteString && allowListLink == null || splitRemoteStringWith == null)
+            {
+                LogError("Using remote string without a character to split the string with or no link to the remote string, this is not supported, disabling remote string loading. Please read the documentation what this setting does.");
+                useRemoteString = false;
+            }
+
+            if(replacePassWithChar == null || replacePassWithChar.ToString().Length > 1)
+            {
+                LogWarning("Invalid or character to hide the password with, this is unsupported, please disable 'Hide password' instead. Resetting to default config for this field.");
+                replacePassWithChar = '*';
+            }
 
             // Merge primary solution/door with additional solutions/doors.
             // This makes coding and loops more streamlined.

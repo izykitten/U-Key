@@ -104,7 +104,7 @@ RectTransform:
   m_LocalScale: {x: 1, y: 1, z: 0}
   m_Children: []
   m_Father: {fileID: 5078639779534004991}
-  m_RootOrder: 3
+  m_RootOrder: 4
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
@@ -2165,7 +2165,7 @@ GameObject:
   - component: {fileID: 9094049781573009015}
   - component: {fileID: 7212330972548772972}
   m_Layer: 0
-  m_Name: TOP_S (1)
+  m_Name: TOP_S2
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -2183,7 +2183,7 @@ RectTransform:
   m_LocalScale: {x: 1, y: 1, z: 0}
   m_Children: []
   m_Father: {fileID: 5078639779534004991}
-  m_RootOrder: 4
+  m_RootOrder: 3
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
@@ -2699,8 +2699,8 @@ RectTransform:
   - {fileID: 5049712209209736446}
   - {fileID: 7322012570903998068}
   - {fileID: 4574159786911644460}
-  - {fileID: 8569990872530787195}
   - {fileID: 4591832492151435255}
+  - {fileID: 8569990872530787195}
   m_Father: {fileID: 1019127140703452877}
   m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
@@ -3170,13 +3170,10 @@ MonoBehaviour:
   soundDenied: {fileID: 0}
   soundGranted: {fileID: 0}
   soundButton: {fileID: 0}
-  internalKeypadDisplay: {fileID: 1165432261644349321}
   translationWaitcode: PASSCODE
   translationDenied: DENIED
   translationGranted: GRANTED
-  additionalKeySeparation: 0
-  additionalPasscodes: []
-  additionalDoors: []
+  internalKeypadDisplay: {fileID: 1165432261644349321}
   programs: []
   ExtraObjectsToTurnOn: []
   ExtraObjectsToTurnOff: []
@@ -3196,6 +3193,9 @@ MonoBehaviour:
   allowListLink:
     url: 
   splitRemoteStringWith: 44
+  additionalKeySeparation: 0
+  additionalPasscodes: []
+  additionalDoors: []
   enableLogging: 1
 --- !u!114 &4737459655680067385
 MonoBehaviour:
@@ -5473,12 +5473,12 @@ PrefabInstance:
     - target: {fileID: 7712871402921161023, guid: 721b95ff28060c94ba573d53782b73b3,
         type: 3}
       propertyPath: m_AnchoredPosition.x
-      value: 21.1
+      value: 21.25
       objectReference: {fileID: 0}
     - target: {fileID: 7712871402921161023, guid: 721b95ff28060c94ba573d53782b73b3,
         type: 3}
       propertyPath: m_AnchoredPosition.y
-      value: 16.71
+      value: 16.87
       objectReference: {fileID: 0}
     - target: {fileID: 7712871402921161023, guid: 721b95ff28060c94ba573d53782b73b3,
         type: 3}
