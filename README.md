@@ -26,7 +26,7 @@ This is a drag-and-drop Keypad/Passcode Prefab for VRChat worlds made in Unity *
 
 ![Settings available in the Keypad prefab](https://user-images.githubusercontent.com/93742413/226104995-532ec22e-09ca-46fe-8c5f-9d0200f30059.PNG)
 
-The main focus is "Door Object" (marked in green) which accepts any GameObject and will toggle active status depending on passcode status, and "Solution" (marked in yellow) which accepts any numeric passcode up to 8 numbers long.
+The main focus is "Door Objects" (marked in green) which accepts any GameObject and will toggle active status depending on passcode status, and "Solution" (marked in yellow) which accepts any numeric passcode up to 8 numbers long.
 
 "Allow List" means the usernames on that list will always be allowed no matter what code they press or no code at all. "Deny List" means those users will never be allowed, even if they type the correct code.
 
@@ -36,14 +36,14 @@ The main focus is "Door Object" (marked in green) which accepts any GameObject a
 
 ## **🖌️ Customisation!**
 
-The new version of Keypad supports many customization features. For example translating the Keypad into your own language, by changing the status texts. You can also make the door show the door instead of hiding the door by de-selecting the "Hide Door On Granted" checkbox. 
+The Keypad supports translating the display output, custom characters to replace the numbers, and many nmore things!
 
 ## **⚙️ Advanced: Solution Scripting**
 
 This is optional, and only recommended for people who are interested in doing Udon programming. 
 **You should at least have watched Tupper's tutorial on cube-rotation before attempting this!**
 
-There are 3 possible programs which are run at different stages: at success, at failure, and at reset. Each program calls a custom event. An optional variable `keypadCode` will be set with the entered code on the target program.
+There are 3 possible events sent at different stages: at success, at failure, and at reset. Each referenced UdonBehaviour will receive one of the events described. An optional variable `keypadCode` will be set with the entered code on the target program.
 
 ## **💙 Hope you enjoy it!**
 
