@@ -3177,9 +3177,7 @@ MonoBehaviour:
   additionalKeySeparation: 0
   additionalPasscodes: []
   additionalDoors: []
-  programsClosed: []
-  programsDenied: []
-  programsGranted: []
+  programs: []
   ExtraObjectsToTurnOn: []
   ExtraObjectsToTurnOff: []
   OnJoinGrant: 0
@@ -3191,8 +3189,8 @@ MonoBehaviour:
   MaxInputLength: 8
   HidePasswordTyped: 1
   replacePassWithChar: 42
-  eventNameOnClosed: _interact
-  eventNameOnDenied: _interact
+  eventNameOnClosed: _keypadClosed
+  eventNameOnDenied: _keypadDenied
   eventNameOnGranted: _interact
   useRemoteString: 0
   allowListLink:
