@@ -50,14 +50,14 @@ namespace UwUtils
         [SerializeField] private bool additionalKeySeparation = false;
         [Space, SerializeField] private string[] additionalPasscodes = new string[0];
         [SerializeField] private GameObject[] additionalDoors = new GameObject[0];
-        [Header("Event trigger relays")]
+        [Header("Scripts to send a custom event to on Clear/Deny/Granted actions")]
         [Space]
-        [SerializeField] private UdonBehaviour[] programsClosed;
-        [SerializeField] private UdonBehaviour[] programsDenied;
-        [SerializeField] private UdonBehaviour[] programsGranted;
+        [SerializeField] private UdonBehaviour[] programs;
         [Space]
         [Header("Extra Functions/Settings")]
+        [Tooltip("Extra objects that will get turned on when granted (not affected by key seperation)")]
         [SerializeField] private GameObject[] ExtraObjectsToTurnOn = new GameObject[0];
+        [Tooltip("Extra objects that will get turned off when granted (not affected by key seperation)")]
         [SerializeField] private GameObject[] ExtraObjectsToTurnOff = new GameObject[0];
         [Space]
         [Tooltip("If true, will automatically apply onGrant actions when an allowed user joins the world.")]
@@ -76,8 +76,11 @@ namespace UwUtils
         [Tooltip("Will replace password being typed to this character to hide it")]
         [SerializeField] private bool HidePasswordTyped = true;
         [SerializeField] private char replacePassWithChar = '*';
-        [SerializeField] private string eventNameOnClosed = "_interact";
-        [SerializeField] private string eventNameOnDenied = "_interact";
+        [Tooltip("name of the event to send to programs when the Clear button is pressed")]
+        [SerializeField] private string eventNameOnClosed = "_keypadClosed";
+        [Tooltip("name of the event to send to programs when the keypad Denies access")]
+        [SerializeField] private string eventNameOnDenied = "_keypadDenied";
+        [Tooltip("name of the event to send to programs when access is Granted")]
         [SerializeField] private string eventNameOnGranted = "_interact";
         [Space, Tooltip(" to update the allow list without updating the world")]
         [SerializeField] private bool useRemoteString = false;
@@ -292,14 +295,7 @@ namespace UwUtils
                 isGranted = false;
                 Networking.LocalPlayer.SetPlayerTag("rank", "Visitor");
             }
-            if (programsClosed != null)
-            {
-                foreach(UdonBehaviour prog in programsClosed)
-                {
-                    prog.SetProgramVariable("keypadCode", _buffer);
-                    prog.SendCustomEvent(eventNameOnClosed);
-                }
-            }
+            _relayToPrograms(0); // Relay closed event to programs
             _buffer = "";
         }
         private void _grantEvent()
@@ -326,22 +322,41 @@ namespace UwUtils
                     door.SetActive(!hideDoorsOnGranted);
                 }
             }
-
-            if (soundGranted != null)
-            {
-                feedbackSource.PlayOneShot(soundGranted);
-            }
-
-            if (programsGranted != null)
-            {
-                foreach (UdonBehaviour prog in programsGranted)
-                {
-                    if (!prog) continue;
-                    prog.SetProgramVariable("keypadCode", _buffer);
-                    prog.SendCustomEvent(eventNameOnGranted);
-                }
-            }
+            if (soundGranted != null) feedbackSource.PlayOneShot(soundGranted);
+            _relayToPrograms(2); // Relay granted to programs.
             isGranted = true;
+        }
+
+        public void _relayToPrograms(int result)
+        {
+            if (programs != null)
+            {
+                switch(result)
+                {
+                    case 0:
+                        foreach (UdonBehaviour prog in programs)
+                        {
+                            prog.SetProgramVariable("keypadCode", _buffer);
+                            prog.SendCustomEvent(eventNameOnClosed);
+                        }
+                        break;
+                    case 1:
+                        foreach (UdonBehaviour prog in programs)
+                        {
+                            prog.SetProgramVariable("keypadCode", _buffer);
+                            prog.SendCustomEvent(eventNameOnDenied);
+                        }
+                        break;
+                    case 2:
+                        foreach (UdonBehaviour prog in programs)
+                        {
+                            prog.SetProgramVariable("keypadCode", _buffer);
+                            prog.SendCustomEvent(eventNameOnGranted);
+                        }
+                        break;
+                }
+                
+            }
         }
 
         // ReSharper disable once InconsistentNaming
@@ -391,24 +406,13 @@ namespace UwUtils
                 // Do not announce to user that they are on deny list.
                 Log("Passcode DENIED!");
                 if (useDisplay) internalKeypadDisplay.text = translationDenied;
-
                 foreach (GameObject door in _doors)
                 {
                     if (door == null) continue;
                     door.SetActive(hideDoorsOnGranted);
                 }
-
                 if (soundDenied != null) feedbackSource.PlayOneShot(soundDenied);
-
-                if (programsDenied != null)
-                {
-                    foreach (UdonBehaviour prog in programsDenied)
-                    {
-                        if (!prog) continue;
-                        prog.SetProgramVariable("keypadCode", _buffer);
-                        prog.SendCustomEvent(eventNameOnDenied);
-                    }
-                }
+                _relayToPrograms(1); // Relay denied event to programs
                 isGranted = false;
                 _buffer = "";
             }
@@ -418,10 +422,10 @@ namespace UwUtils
         {
             if (HidePasswordTyped)
             {
-                var pass = "*";
+                string pass = replacePassWithChar.ToString();
                 for (var i = 1; i < _buffer.Length; i++)
                 {
-                    pass += " *";
+                    pass += " " + replacePassWithChar;
                 }
                 if (useDisplay) internalKeypadDisplay.text = pass;
             }
