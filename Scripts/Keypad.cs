@@ -357,7 +357,7 @@ namespace UwUtils
                     o.SetActive(true);
                 }
             }
-            if (soundGranted != null) feedbackSource.PlayOneShot(soundGranted);
+            if (soundGranted != null && useAudioFeedback && feedbackSource) feedbackSource.PlayOneShot(soundGranted);
             _relayToPrograms(2); // Relay granted to programs.
             isGranted = true;
         }
@@ -446,7 +446,7 @@ namespace UwUtils
                     if (door == null) continue;
                     door.SetActive(hideDoorsOnGranted);
                 }
-                if (soundDenied != null) feedbackSource.PlayOneShot(soundDenied);
+                if (soundDenied != null && useAudioFeedback && feedbackSource) feedbackSource.PlayOneShot(soundDenied);
                 _relayToPrograms(1); // Relay denied event to programs
                 isGranted = false;
                 _buffer = "";
@@ -497,10 +497,7 @@ namespace UwUtils
                     _buffer += inputValue;
                     PrintPassword();
                     Log("Buffer appended: " + inputValue);
-                    if (soundButton != null)
-                    {
-                        feedbackSource.PlayOneShot(soundButton);
-                    }
+                    if (soundButton != null && useAudioFeedback && feedbackSource) feedbackSource.PlayOneShot(soundButton);
                 }
             }
         }
