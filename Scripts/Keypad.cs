@@ -14,8 +14,8 @@ namespace UwUtils
     public class Keypad : UdonSharpBehaviour
     {
 
-        private readonly string AUTHOR = "Foorack, Fork by Reava_";
-        private readonly string VERSION = "3.6";
+        private readonly string AUTHOR = "Reava_";
+        private readonly string VERSION = "3.7b";
         [Space]
         [SerializeField] private bool hideDoorsOnGranted = true;
         [SerializeField] private string keypadPassword = "8462";
@@ -343,6 +343,7 @@ namespace UwUtils
             }
             if(ExtraObjectsToTurnOn.Length > 0) // Turn on objects in ExtraObjectsToTurnOn array if there are any
             {
+                Log(ExtraObjectsToTurnOn.Length + " Extra Objects to turn ON found, executing");
                 foreach (GameObject o in ExtraObjectsToTurnOn)
                 {
                     if (o == null) continue;
@@ -351,6 +352,7 @@ namespace UwUtils
             }
             if (ExtraObjectsToTurnOff.Length > 0) // Turn off objects in ExtraObjectsToTurnOn array if there are any
             {
+                Log(ExtraObjectsToTurnOff.Length + " Extra Objects to turn OFF found, executing");
                 foreach (GameObject o in ExtraObjectsToTurnOff)
                 {
                     if (o == null) continue;
@@ -366,7 +368,8 @@ namespace UwUtils
         {
             if (programs != null)
             {
-                switch(result)
+                Log(programs.Length + " programs to relay to found, executing");
+                switch (result)
                 {
                     case 0:
                         foreach (UdonBehaviour prog in programs)
@@ -490,7 +493,7 @@ namespace UwUtils
             {
                 if (_buffer.Length == MaxInputLength)
                 {
-                    Log("Limit reached!");
+                    Log("Input Limit reached!");
                 }
                 else
                 {
