@@ -2,13 +2,14 @@
 
 ![keypad](https://user-images.githubusercontent.com/93742413/226099076-105fcbdf-e777-49a4-bdfc-deebb8ce7709.png)
 
-# Currently being ported to [VCC](https://vcc.docs.vrchat.com/)!
+# Easy to use & Drag and Drop
 
-This is a fork of the known keypad from Foorack, I'm currently porting it to be used on par with [UwUtils](https://github.com/Reava/UwUtils) or standalone, with the latest Udon goodies (Like Remote String Loading) and in general, just a big refresh of it whilst keeping it mostly similar.
+This is a drag-and-drop Keypad/Passcode Prefab for VRChat worlds made in Unity **2019.4.31f1** and **SDK3** with Udon. 
+**This prefab requires no coding from your part and is very easy to setup. **
+Password and target door are both easily configurable, with optional support for custom activation scripts if wanting more advanced functions.
 
-! **I'm also rewriting this readme as I'm changing/updating things.**
-
-This is a drag-and-drop Keypad/Passcode Prefab for VRChat worlds made in Unity **2019.4.31f1** and **SDK3** with Udon. This prefab requires no coding from your part and is very easy to setup. Password and target door are both easily configurable, with optional support for custom activation scripts if wanting more advanced activations.
+There are many ways of customizing the keypad, from many options, audio feedback, automatic granting, teleport on grant, changing the text displayed, easily customizable UI, expandable features via the program relays, remote string loading, etc!
+There is also extensive debugging done with the logs to allow easy understanding of its behaviour and fast support in case you encounter an issue.
 
 ## **📥 Download:**
 
@@ -48,5 +49,3 @@ There are 3 possible events sent at different stages: at success, at failure, an
 ## **💙 Hope you enjoy it!**
 
 You are free to use this prefab without having to credit me. But if you do use it, I would love it if you sent a quick screenshot. It really gives motivation to continuously update and improve this, as well as continue making other stuff public. Thank you!
-
-[![Discord](https://img.shields.io/badge/Discord-Foo's%20Udon%20Laboratory-blueviolet?logo=discord)](https://discord.gg/7xJdWNk)
