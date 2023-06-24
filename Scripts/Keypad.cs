@@ -354,7 +354,7 @@ namespace UwUtils
                 foreach (GameObject o in ExtraObjectsToTurnOff)
                 {
                     if (o == null) continue;
-                    o.SetActive(true);
+                    o.SetActive(false);
                 }
             }
             if (soundGranted != null && useAudioFeedback && feedbackSource) feedbackSource.PlayOneShot(soundGranted);
