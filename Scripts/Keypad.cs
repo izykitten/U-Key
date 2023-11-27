@@ -15,7 +15,7 @@ namespace UwUtils
     {
 
         private readonly string AUTHOR = "Reava_";
-        private readonly string VERSION = "3.7b";
+        private readonly string VERSION = "3.7alpha";
         [Space]
         [SerializeField] private bool hideDoorsOnGranted = true;
         [SerializeField] private string keypadPassword = "8462";
