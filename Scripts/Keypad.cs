@@ -417,11 +417,22 @@ namespace UwUtils
                     if (_doors[i] == null) correctDoor = _doors[i];
                 }
             }
-            // Check if pass is correct and not on deny, or if is on allow list.
+            if (additionalKeySeparation)
+            {
+                for (var i = 0; i != additionalPasscodes.Length; i++)
+                {
+                    if (additionalPasscodes[i] != _buffer) continue;
+                    if (i < additionalDoors.Length)
+                    {
+                        additionalDoors[i].SetActive(!hideDoorsOnGranted);
+                    }
+                }
+            }
+                // Check if pass is correct and not on deny, or if is on allow list.
             if ((isCorrect && !isOnDeny) || isOnAllow)
             {
                 _grantEvent();
-                if (teleportOnGrant && teleportDestination != null) Networking.LocalPlayer.TeleportTo(teleportDestination.position, teleportDestination.rotation);
+                if (teleportOnGrant && (teleportDestination != null)) Networking.LocalPlayer.TeleportTo(teleportDestination.position, teleportDestination.rotation);
                 _buffer = "";
             }
             else
