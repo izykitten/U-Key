@@ -5,7 +5,7 @@
 # Easy to use & Drag and Drop
 
 This is a drag-and-drop Keypad/Passcode Prefab for VRChat worlds made in Unity **2019.4.31f1** and **SDK3** with Udon. 
-**This prefab requires no coding from your part and is very easy to setup. **
+**This prefab requires no coding from your part and is very easy to setup.**
 Password and target door are both easily configurable, with optional support for custom activation scripts if wanting more advanced functions.
 
 There are many ways of customizing the keypad, from many options, audio feedback, automatic granting, teleport on grant, changing the text displayed, easily customizable UI, expandable features via the program relays, remote string loading, etc!
