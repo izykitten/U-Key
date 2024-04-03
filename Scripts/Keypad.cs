@@ -433,7 +433,7 @@ namespace UwUtils
             {
                 _grantEvent();
                 if (teleportOnGrant && (teleportDestination != null)) Networking.LocalPlayer.TeleportTo(teleportDestination.position, teleportDestination.rotation);
-                _buffer = "";
+                if (isOnAllow) _buffer = ""; // Clears buffer only if is on allow to avoid double press resetting the states on normal behavior
             }
             else
             {
