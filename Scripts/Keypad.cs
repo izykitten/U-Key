@@ -324,22 +324,7 @@ namespace UwUtils
             if (TagName != null) Networking.LocalPlayer.SetPlayerTag("rank", TagName);
             foreach (GameObject door in _doors)
             {
-                if (door == null) continue;
-                if (additionalKeySeparation)
-                {
-                    if (door == correctDoor)
-                    {
-                        door.SetActive(!hideDoorsOnGranted);
-                    }
-                    else
-                    {
-                        door.SetActive(hideDoorsOnGranted);
-                    }
-                }
-                else
-                {
-                    door.SetActive(!hideDoorsOnGranted);
-                }
+                if (door != null) door.SetActive(!hideDoorsOnGranted);
             }
             if(ExtraObjectsToTurnOn.Length > 0) // Turn on objects in ExtraObjectsToTurnOn array if there are any
             {
