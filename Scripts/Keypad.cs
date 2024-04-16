@@ -15,7 +15,7 @@ namespace UwUtils
     {
 
         private readonly string AUTHOR = "Reava_";
-        private readonly string VERSION = "3.7alpha";
+        private readonly string VERSION = "3.9alpha";
         [Space]
         [SerializeField] private bool hideDoorsOnGranted = true;
         [SerializeField] private string keypadPassword = "8462";
@@ -98,7 +98,6 @@ namespace UwUtils
         private bool isGranted;
         private string[] strArr = new string[0];
         private bool isOnAllow = false;
-        private GameObject correctDoor = null;
         private string username = null;
 
         #region Util Functions
@@ -141,13 +140,13 @@ namespace UwUtils
 
             if (keypadPassword == null)
             {
-                LogError("Solution was null! Resetting to default value!");
-                keypadPassword = "2580";
+                LogError("Solution was null! Generating random password for security.");
+                keypadPassword = Random.value.ToString();
             }
 
             if (keypadPassword.Length < 1 || keypadPassword.Length > MaxInputLength)
             {
-                LogError("Solution was empty or longer than "+ MaxInputLength +" in length! Generating random value for security.");
+                LogError("Solution was empty or longer than "+ MaxInputLength +" in length! Generating random password for security.");
                 keypadPassword = Random.value.ToString();
             }
 
@@ -405,17 +404,11 @@ namespace UwUtils
             {
                 if (entry == username) isOnDeny = true;
             }
-
-            var isCorrect = false;
-            correctDoor = null;
-            for (var i = 0; i != _solutions.Length; i++)
+            bool isCorrect = false;
+            for (int i = 0; i != _solutions.Length; i++)
             {
                 if (_solutions[i] != _buffer) continue;
                 isCorrect = true;
-                if (i < _doors.Length)
-                {
-                    if (_doors[i] == null) correctDoor = _doors[i];
-                }
             }
             if (additionalKeySeparation)
             {
