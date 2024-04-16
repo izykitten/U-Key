@@ -141,13 +141,13 @@ namespace UwUtils
             if (keypadPassword == null)
             {
                 LogError("Solution was null! Generating random password for security.");
-                keypadPassword = Random.value.ToString();
+                keypadPassword = (Random.value * 15847).ToString().Substring(0, 4);
             }
 
             if (keypadPassword.Length < 1 || keypadPassword.Length > MaxInputLength)
             {
                 LogError("Solution was empty or longer than "+ MaxInputLength +" in length! Generating random password for security.");
-                keypadPassword = Random.value.ToString();
+                keypadPassword = (Random.value * 15847).ToString().Substring(0, 4);
             }
 
             if (internalKeypadDisplay == null && useDisplay)
