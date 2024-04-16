@@ -37,7 +37,7 @@ The main focus is "Door Objects" (marked in green) which accepts any GameObject 
 
 ## **🖌️ Customisation!**
 
-The Keypad supports translating the display output, custom characters to replace the numbers, and many nmore things!
+The Keypad supports translating the display output, custom characters to replace the numbers, and many more things!
 
 ## **⚙️ Advanced: Solution Scripting**
 
@@ -48,4 +48,4 @@ There are 3 possible events sent at different stages: at success, at failure, an
 
 ## **💙 Hope you enjoy it!**
 
-You are free to use this prefab without having to credit me. But if you do use it, I would love it if you sent a quick screenshot. It really gives motivation to continuously update and improve this, as well as continue making other stuff public. Thank you!
+You are free to use this prefab as you wish as long as you don't claim it as yours, republish as is, or resell. But if you do use it, I would love it if you sent a quick screenshot or credit. It really gives motivation to continuously update and improve this, as well as continue making other stuff public. Thank you!
