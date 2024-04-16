@@ -131,7 +131,7 @@ namespace UwUtils
         public void Start()
         {
             // ReSharper disable once SpecifyACultureInStringConversionExplicitly
-            _keypadId = Random.value.ToString() + "(" + gameObject.name + ")";
+            _keypadId = (Random.value * 15847).ToString().Substring(0, 4) + "(" + gameObject.name + ")";
             _prefix = "[Reava_/UwUtils/Keypad] [K-" + _keypadId + "] ";
             // Override disableDebugging here
             Debug.Log(_prefix + "Starting Keypad... Made by @" + AUTHOR + ". Version " + VERSION + ".");
@@ -215,13 +215,13 @@ namespace UwUtils
             }
             Log("Additional key separation is: " + additionalKeySeparation);
 
-            if(useRemoteString && allowListLink == null || splitRemoteStringWith == null)
+            if((useRemoteString && allowListLink == null) || splitRemoteStringWith == '\0')
             {
                 LogError("Using remote string without a character to split the string with or no link to the remote string, this is not supported, disabling remote string loading. Please read the documentation what this setting does.");
                 useRemoteString = false;
             }
 
-            if(replacePassWithChar == null || replacePassWithChar.ToString().Length > 1)
+            if(replacePassWithChar == '\0' || replacePassWithChar.ToString().Length > 1)
             {
                 LogWarning("Invalid or character to hide the password with, this is unsupported, please disable 'Hide password' instead. Resetting to default config for this field.");
                 replacePassWithChar = '*';
@@ -254,11 +254,7 @@ namespace UwUtils
             {
                 foreach (string u in allowList)
                 {
-                    if (u == null) continue;
-                    if (u == username)
-                    {
-                        _grantEvent();
-                    }
+                    if (u != null && u == username) _grantEvent();
                 }
             }
             Log("Keypad started!");

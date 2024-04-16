@@ -7,8 +7,6 @@ using UwUtils;
 // ReSharper disable MemberCanBeMadeStatic.Local
 // ReSharper disable once CheckNamespace
 
-// PORTING FROM FOORACK TO UWUTILS
-
 namespace UwUtils
 {
     [AddComponentMenu("UwUtils/Keypad Button")]
@@ -50,7 +48,7 @@ namespace UwUtils
         public void Start()
         {
             // ReSharper disable once SpecifyACultureInStringConversionExplicitly
-            _buttonId = Random.value.ToString();
+            _buttonId = (Random.value * 15847).ToString().Substring(0, 4);
             _prefix = "[UdonKeypad] [b-" + _buttonId + "] ";
 
             Log("Loading button... Value: " + buttonValue);
@@ -86,6 +84,7 @@ namespace UwUtils
 
         public override void Interact()
         {
+            Log("Key pressed: " + buttonValue + " (interact)");
             if (Networking.LocalPlayer != null/* && Networking.LocalPlayer.IsUserInVR()*/) // Why was it checking for user in vr???
             {
                 ButtonPressed();
@@ -94,12 +93,12 @@ namespace UwUtils
 
         public void OnMouseDown()
         {
+            Log("Key pressed: " + buttonValue + " (OnMouseDown)");
             ButtonPressed();
         }
 
         private void ButtonPressed()
         {
-            Log("Key pressed: " + buttonValue);
             keypad.ButtonInput(buttonValue);
         }
     }
