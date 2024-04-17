@@ -15,7 +15,7 @@ namespace UwUtils
     {
 
         private readonly string AUTHOR = "Reava_";
-        private readonly string VERSION = "3.9alpha";
+        private readonly string VERSION = "3.9 alpha";
         [Space]
         [SerializeField] private bool hideDoorsOnGranted = true;
         [SerializeField] private string keypadPassword = "8462";
@@ -138,16 +138,10 @@ namespace UwUtils
 
             _buffer = "";
 
-            if (keypadPassword == null)
+            if ((keypadPassword.Length < 1 || keypadPassword.Length > MaxInputLength) || keypadPassword == null)
             {
-                LogError("Solution was null! Generating random password for security.");
-                keypadPassword = (Random.value * 15847).ToString().Substring(0, 4);
-            }
-
-            if (keypadPassword.Length < 1 || keypadPassword.Length > MaxInputLength)
-            {
-                LogError("Solution was empty or longer than "+ MaxInputLength +" in length! Generating random password for security.");
-                keypadPassword = (Random.value * 15847).ToString().Substring(0, 4);
+                LogError("Solution was empty or longer than "+ MaxInputLength +" ! Generating unusable password for security.");
+                keypadPassword = Random.value.ToString();
             }
 
             if (internalKeypadDisplay == null && useDisplay)

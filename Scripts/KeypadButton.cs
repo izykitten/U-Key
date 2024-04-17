@@ -50,7 +50,7 @@ namespace UwUtils
             // ReSharper disable once SpecifyACultureInStringConversionExplicitly
             _buttonId = (Random.value * 15847).ToString().Substring(0, 4);
             _prefix = "[UdonKeypad] [b-" + _buttonId + "] ";
-
+            // need to replace prefix and id stuff to match that of parent's keypad 
             Log("Loading button... Value: " + buttonValue);
             if (keypad == null)
             {
