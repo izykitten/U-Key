@@ -456,7 +456,6 @@ namespace UwUtils
         {
             if (inputValue == "CLR")
             {
-                isGranted = false;
                 CLR();
             }
             else if (inputValue == "OK")
