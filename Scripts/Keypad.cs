@@ -18,7 +18,8 @@ namespace UwUtils
         private readonly string VERSION = "3.9 alpha";
         [Space]
         [SerializeField] private bool hideDoorsOnGranted = true;
-        [SerializeField] private string keypadPassword = "8462";
+        [SerializeField] private bool disableKeypadOnGrant = false; // Keypad remains enabled after granting access by default
+        [SerializeField] private string[] keypadPasswords = new string[] {"8462"};
         [Space]
         [SerializeField] private GameObject[] DoorObjects = new GameObject[0];
         [Tooltip("List of users that can just press the confirm button without the code to get permission")]
@@ -32,15 +33,17 @@ namespace UwUtils
         [SerializeField] private AudioClip soundDenied = null;
         [SerializeField] private AudioClip soundGranted = null;
         [SerializeField] private AudioClip soundButton = null;
+        [SerializeField] private AudioClip soundLocked = null;
         [Space]
         [Header("Text display")]
         [Space]
         [SerializeField] private string translationWaitcode = "PASSCODE";
         [SerializeField] private string translationDenied = "DENIED";
         [SerializeField] private string translationGranted = "GRANTED";
+        [SerializeField] private string translationLocked = "LOCKED";
         [SerializeField] private TextMeshProUGUI internalKeypadDisplay = null;
         [Space]
-        [Header("Scripts to send a custom event to on Clear/Deny/Granted actions")]
+        [Header("Scripts to send a custom event to on Clear/Deny/Granted/Locked actions")]
         [SerializeField] private UdonBehaviour[] programs;
         [Space]
         [Header("Extra Functions/Settings")]
@@ -62,6 +65,7 @@ namespace UwUtils
         [SerializeField] private bool OnClearRevertDoors = true;
         [SerializeField] private bool useDisplay = true;
         [SerializeField] private int MaxInputLength = 8;
+        [SerializeField] private int maxAttempts = 0;
         [Tooltip("Will replace password being typed to this character to hide it")]
         [SerializeField] private bool HidePasswordTyped = true;
         [SerializeField] private char replacePassWithChar = '*';
@@ -71,6 +75,10 @@ namespace UwUtils
         [SerializeField] private string eventNameOnDenied = "_keypadDenied";
         [Tooltip("name of the event to send to programs when access is Granted")]
         [SerializeField] private string eventNameOnGranted = "_interact";
+        [Tooltip("name of the event to send to programs when the keypad is Locked")]
+        [SerializeField] private string eventNameOnLocked = "_keypadLocked";
+        [Tooltip("Name of the variable to use when sending the additional passcode index to programs")]
+        [SerializeField] private string eventNameOnAdditionalPasscode = "_keypadAdditionalPasscode";
         [Space, Tooltip(" to update the allow list without updating the world")]
         [SerializeField] private bool useRemoteString = false;
         [Tooltip("You can use Pastebin RAW")]
@@ -99,6 +107,9 @@ namespace UwUtils
         private string[] strArr = new string[0];
         private bool isOnAllow = false;
         private string username = null;
+        private int _attemptCount = 0;
+        private bool _isLocked = false;
+        private int _lastUsedPasswordIndex = -1; // Stores which additional passcode was used
 
         #region Util Functions
         private void Log(string value)
@@ -138,10 +149,21 @@ namespace UwUtils
 
             _buffer = "";
 
-            if ((keypadPassword.Length < 1 || keypadPassword.Length > MaxInputLength) || keypadPassword == null)
+            if (keypadPasswords == null || keypadPasswords.Length == 0)
             {
-                LogError("Solution was empty or longer than "+ MaxInputLength +" ! Generating unusable password for security.");
-                keypadPassword = Random.value.ToString();
+                LogError("Password array was empty! Generating unusable password for security.");
+                keypadPasswords = new string[] { Random.value.ToString() };
+            }
+            else
+            {
+                for (int i = 0; i < keypadPasswords.Length; i++)
+                {
+                    if (keypadPasswords[i] == null || keypadPasswords[i].Length < 1 || keypadPasswords[i].Length > MaxInputLength)
+                    {
+                        LogError("Password at index " + i + " was empty or longer than " + MaxInputLength + "! Replacing with random value for security.");
+                        keypadPasswords[i] = Random.value.ToString();
+                    }
+                }
             }
 
             if (internalKeypadDisplay == null && useDisplay)
@@ -192,7 +214,7 @@ namespace UwUtils
             if (DoorObjects.Length > 999)
             {
                 LogError("Additional Doors list was larger than 999, this is most likely unintentional, resetting to 0.");
-                DoorObjects = new GameObject[0];
+                DoorObjects = new GameObject[0]; // changed from new string[0] to new GameObject[0]
             }
 
             if (additionalKeySeparation && additionalPasscodes.Length != additionalDoors.Length)
@@ -228,16 +250,35 @@ namespace UwUtils
                 if (translationDenied == null) translationDenied = "DENIED";
                 if (translationGranted == null) translationGranted = "GRANTED";
             }
+            
+            if (string.IsNullOrEmpty(eventNameOnAdditionalPasscode))
+            {
+                LogWarning("Event Name On Additional Passcode is empty, setting to default value.");
+                eventNameOnAdditionalPasscode = "_keypadAdditionalPasscode";
+            }
+
+            if (maxAttempts <= 0)
+            {
+                maxAttempts = 0;
+            }
 
             // Merge primary solution/door with additional solutions/doors.
             // This makes coding and loops more streamlined.
-            _solutions = new string[additionalPasscodes.Length + 1];
+            _solutions = new string[additionalPasscodes.Length + keypadPasswords.Length];
             _doors = new GameObject[DoorObjects.Length + 1];
-            _solutions[0] = keypadPassword;
-            for (int i = 0; i != additionalPasscodes.Length; i++)
+            
+            // Add all keypadPasswords to _solutions
+            for (int i = 0; i < keypadPasswords.Length; i++)
             {
-                _solutions[i + 1] = additionalPasscodes[i];
+                _solutions[i] = keypadPasswords[i];
             }
+            
+            // Add additional passcodes
+            for (int i = 0; i < additionalPasscodes.Length; i++)
+            {
+                _solutions[i + keypadPasswords.Length] = additionalPasscodes[i];
+            }
+            
             for (int i = 0; i != DoorObjects.Length; i++)
             {
                 _doors[i + 1] = DoorObjects[i];
@@ -305,7 +346,14 @@ namespace UwUtils
             }
             _relayToPrograms(0); // Relay closed event to programs
             _buffer = "";
+
+            // Play button sound when CLR is pressed
+            if (soundButton != null && useAudioFeedback && feedbackSource) feedbackSource.PlayOneShot(soundButton);
+
+            // Reset the isGranted flag to allow the OK button to function again
+            isGranted = false;
         }
+
         private void _grantEvent()
         {
             Log(isOnAllow ? "GRANTED through allow list!" : "Passcode GRANTED!");
@@ -336,6 +384,19 @@ namespace UwUtils
             if (soundGranted != null && useAudioFeedback && feedbackSource) feedbackSource.PlayOneShot(soundGranted);
             _relayToPrograms(2); // Relay granted to programs.
             isGranted = true;
+            
+            // Disable the keypad if configured to do so
+            if (disableKeypadOnGrant)
+            {
+                Log("Disabling keypad as configured.");
+                this.gameObject.GetComponent<UdonBehaviour>().enabled = false;
+            }
+        }
+
+        private bool HasPublicVariable(UdonBehaviour script, string varName)
+        {
+            // Remove public variable lookup. Udon does not expose publicVariables at runtime.
+            return true;
         }
 
         public void _relayToPrograms(int result)
@@ -348,22 +409,49 @@ namespace UwUtils
                     case 0:
                         foreach (UdonBehaviour prog in programs)
                         {
-                            prog.SetProgramVariable("keypadCode", _buffer);
+                            if (prog == null) continue;
+                            if (HasPublicVariable(prog, "keypadCode"))
+                                prog.SetProgramVariable("keypadCode", _buffer);
+                            if (_lastUsedPasswordIndex >= 0 && HasPublicVariable(prog, eventNameOnAdditionalPasscode))
+                                prog.SetProgramVariable(eventNameOnAdditionalPasscode, _lastUsedPasswordIndex);
+
                             prog.SendCustomEvent(eventNameOnClosed);
                         }
                         break;
                     case 1:
                         foreach (UdonBehaviour prog in programs)
                         {
-                            prog.SetProgramVariable("keypadCode", _buffer);
+                            if (prog == null) continue;
+                            if (HasPublicVariable(prog, "keypadCode"))
+                                prog.SetProgramVariable("keypadCode", _buffer);
+                            if (_lastUsedPasswordIndex >= 0 && HasPublicVariable(prog, eventNameOnAdditionalPasscode))
+                                prog.SetProgramVariable(eventNameOnAdditionalPasscode, _lastUsedPasswordIndex);
+
                             prog.SendCustomEvent(eventNameOnDenied);
                         }
                         break;
                     case 2:
                         foreach (UdonBehaviour prog in programs)
                         {
-                            prog.SetProgramVariable("keypadCode", _buffer);
+                            if (prog == null) continue;
+                            if (HasPublicVariable(prog, "keypadCode"))
+                                prog.SetProgramVariable("keypadCode", _buffer);
+                            if (_lastUsedPasswordIndex >= 0 && HasPublicVariable(prog, eventNameOnAdditionalPasscode))
+                                prog.SetProgramVariable(eventNameOnAdditionalPasscode, _lastUsedPasswordIndex);
+
                             prog.SendCustomEvent(eventNameOnGranted);
+                        }
+                        break;
+                    case 3:
+                        foreach (UdonBehaviour prog in programs)
+                        {
+                            if (prog == null) continue;
+                            if (HasPublicVariable(prog, "keypadCode"))
+                                prog.SetProgramVariable("keypadCode", _buffer);
+                            if (_lastUsedPasswordIndex >= 0 && HasPublicVariable(prog, eventNameOnAdditionalPasscode))
+                                prog.SetProgramVariable(eventNameOnAdditionalPasscode, _lastUsedPasswordIndex);
+
+                            prog.SendCustomEvent(eventNameOnLocked);
                         }
                         break;
                 }
@@ -374,6 +462,18 @@ namespace UwUtils
         // ReSharper disable once InconsistentNaming
         private void OK()
         {
+            if (disableKeypadOnGrant && isGranted)
+            {
+                Log("OK button disabled after grant.");
+                return;
+            }
+            if(_isLocked && maxAttempts > 0)
+            {
+                Log("Keypad is locked.");
+                if(useDisplay) internalKeypadDisplay.text = translationLocked;
+                if (soundLocked != null && useAudioFeedback && feedbackSource) feedbackSource.PlayOneShot(soundLocked);
+                return;
+            }
             isOnAllow = false;
             var isOnDeny = false;
             username = Networking.LocalPlayer == null ? "UnityEditor" : Networking.LocalPlayer.displayName;
@@ -395,11 +495,28 @@ namespace UwUtils
                 if (entry == username) isOnDeny = true;
             }
             bool isCorrect = false;
-            for (int i = 0; i != _solutions.Length; i++)
+            _lastUsedPasswordIndex = -1; // Reset password index
+            
+            // Check if entered code matches any of the main passwords
+            for (int i = 0; i < keypadPasswords.Length; i++)
             {
-                if (_solutions[i] != _buffer) continue;
+                if (keypadPasswords[i] != _buffer) continue;
                 isCorrect = true;
+                break;
             }
+            
+            // Check if entered code matches any additional passcodes
+            if (!isCorrect) {
+                for (int i = 0; i < additionalPasscodes.Length; i++)
+                {
+                    if (additionalPasscodes[i] != _buffer) continue;
+                    isCorrect = true;
+                    _lastUsedPasswordIndex = i; // Store the index of the additional passcode
+                    Log("Additional passcode used: index " + i);
+                    break;
+                }
+            }
+            
             if (additionalKeySeparation)
             {
                 for (var i = 0; i != additionalPasscodes.Length; i++)
@@ -411,9 +528,12 @@ namespace UwUtils
                     }
                 }
             }
-                // Check if pass is correct and not on deny, or if is on allow list.
+            // Check if pass is correct and not on deny, or if is on allow list.
             if ((isCorrect && !isOnDeny) || isOnAllow)
             {
+                if (isOnAllow && !isCorrect) {
+                    _lastUsedPasswordIndex = -2; // Special index for allowList access
+                }
                 _grantEvent();
                 if (teleportOnGrant && (teleportDestination != null)) Networking.LocalPlayer.TeleportTo(teleportDestination.position, teleportDestination.rotation);
                 if (isOnAllow) _buffer = ""; // Clears buffer only if is on allow to avoid double press resetting the states on normal behavior
@@ -432,6 +552,15 @@ namespace UwUtils
                 _relayToPrograms(1); // Relay denied event to programs
                 isGranted = false;
                 _buffer = "";
+                _attemptCount++;
+                if(maxAttempts > 0 && _attemptCount >= maxAttempts)
+                {
+                    _isLocked = true;
+                    Log("Keypad is now locked due to too many failed attempts.");
+                    if(useDisplay) internalKeypadDisplay.text = translationLocked;
+                    if (soundLocked != null && useAudioFeedback && feedbackSource) feedbackSource.PlayOneShot(soundLocked);
+                    _relayToPrograms(3);
+                }
             }
         }
 
